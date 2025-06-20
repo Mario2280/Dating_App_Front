@@ -20,7 +20,7 @@ declare global {
 }
 
 export default function TelegramLoginWidget({
-  botName,
+  botName = "SomeDatingBot",
   onAuth,
   buttonSize = "large",
   cornerRadius = 20,

@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { ChevronLeft, Camera, Calendar, Edit3 } from "lucide-react"
 import Image from "next/image"
 import ScrollingDatePickerModal from "./scrolling-date-picker"
-import { getTelegramUser, type ProfileData } from "@/lib/telegram-auth"
+import { getTelegramUser } from "@/lib/telegram-auth"
+import type { ProfileData } from "@/lib/types"
 
 interface ProfileDetailsScreenProps {
   onNext: () => void
@@ -17,20 +18,37 @@ interface ProfileDetailsScreenProps {
   currentUser: ProfileData | null
 }
 
-// Helper function to download image as base64
 const downloadImageAsBase64 = async (url: string): Promise<string> => {
   try {
-    const response = await fetch(url)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      mode: "cors",
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
     const blob = await response.blob()
+
+    if (blob.size === 0) {
+      throw new Error("Empty image file")
+    }
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
+      reader.onerror = () => reject(new Error("Failed to read image file"))
       reader.readAsDataURL(blob)
     })
   } catch (error) {
     console.error("Failed to download image:", error)
-    return url // Fallback to original URL
+    return "/placeholder.svg?height=128&width=128" // Fallback to placeholder
   }
 }
 
@@ -104,10 +122,21 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
     onNext()
   }
 
+  const handleBack = () => {
+    const updates: Partial<ProfileData> = {
+      name: `${firstName}${lastName ? ` ${lastName}` : ""}`,
+      age,
+      location,
+      profile_photo: profileImage !== "/placeholder.svg?height=128&width=128" ? profileImage : undefined,
+    }
+
+    onUpdate(updates)
+    onBack()
+  }
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={handleNext} className="text-blue-500 text-lg font-medium">

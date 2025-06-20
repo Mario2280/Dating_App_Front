@@ -78,10 +78,21 @@ export default function InterestsScreen({ onNext, onBack, onUpdate, currentUser 
     onNext()
   }
 
+  const handleBack = () => {
+    const selectedInterestsList = Object.entries(selectedInterests)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([id, _]) => id)
+
+    console.log("Saving interests:", selectedInterestsList) // Debug log
+    onUpdate({ interests: selectedInterestsList })
+    onBack()
+  }
+
+
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={onNext} className="text-blue-500 text-lg font-medium">

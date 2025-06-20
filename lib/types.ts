@@ -10,6 +10,7 @@ export interface TelegramUser {
 
 export interface ProfileData {
   telegram_id: number
+  chat_id: string
   name: string
   age: number
   gender?: "MALE" | "FEMALE"
@@ -45,7 +46,7 @@ export interface ProfileData {
 }
 
 export interface WalletInfo {
-  id: string
+  //id: string
   type: "ton" | "stripe"
   address?: string
   chain?: string

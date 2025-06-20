@@ -180,6 +180,27 @@ export default function ProfileDetailsExtendedScreen({
     onNext()
   }
 
+  const handleBack = () => {
+    const updates: Partial<ProfileData> = {}
+
+    if (selectedPurpose) updates.purpose = selectedPurpose
+    if (selectedEducation) updates.education = selectedEducation
+    if (weight) updates.weight = Number.parseInt(weight)
+    if (height) updates.height = Number.parseInt(height)
+    if (selectedBuild) updates.build = selectedBuild
+    if (selectedLanguage) updates.language = selectedLanguage
+    if (selectedOrientation) updates.orientation = selectedOrientation
+    if (selectedAlcohol) updates.alcohol = selectedAlcohol
+    if (selectedSmoking) updates.smoking = selectedSmoking
+    if (selectedKids) updates.kids = selectedKids
+    if (selectedLivingCondition) updates.living_condition = selectedLivingCondition
+    if (selectedIncome) updates.income = selectedIncome
+
+    console.log("Saving extended profile data:", updates) // Debug log
+    onUpdate(updates)
+    onBack()
+  }
+
   const renderDropdown = <T extends string>(
     label: string,
     value: T,
@@ -232,7 +253,7 @@ export default function ProfileDetailsExtendedScreen({
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={handleNext} className="text-blue-500 text-lg font-medium">

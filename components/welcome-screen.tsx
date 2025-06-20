@@ -170,7 +170,7 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
               {/* Telegram Login Widget */}
               <div className="flex justify-center">
                 <TelegramLoginWidget
-                  botName="your_bot_name" // Replace with your actual bot name
+                  botName="SomeDatingBot" // Replace with your actual bot name
                   onAuth={handleTelegramAuth}
                   buttonSize="large"
                   cornerRadius={20}

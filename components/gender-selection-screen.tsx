@@ -28,10 +28,15 @@ export default function GenderSelectionScreen({ onNext, onBack, onUpdate, curren
     onNext()
   }
 
+  const handleBack = () => {
+    onUpdate({ gender: selectedGender })
+    onBack()
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={handleNext} className="text-blue-500 text-lg font-medium">

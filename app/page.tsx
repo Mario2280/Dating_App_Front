@@ -184,7 +184,7 @@ export default function DatingApp() {
         return (
           <InterestsScreen
             onNext={() => navigateToScreen("about-me")}
-            onBack={() => navigateToScreen("profile-details")}
+            onBack={() => navigateToScreen("profile-details-extended")}
             onUpdate={handleProfileUpdate}
             currentUser={currentUser}
           />
@@ -205,7 +205,7 @@ export default function DatingApp() {
           <MainScreen onProfileClick={() => navigateToScreen("profile-view")} navigateToScreen={navigateToScreen} />
         )
       case "profile-view":
-        return <ProfileViewScreen onBack={() => navigateToScreen("main")} onPhotoClick={handleInstagramPhotoClick} />
+        return <ProfileViewScreen onBack={() => navigateToScreen("main")} onPhotoClick={handleInstagramPhotoClick} navigateToScreen={navigateToScreen}/>
       case "matches":
         return (
           <MatchesScreen

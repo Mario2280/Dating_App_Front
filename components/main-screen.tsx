@@ -96,6 +96,7 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
   }
 
   const handlePullUp = (id: number) => {
+    // Pass the current profile data and navigation function
     navigateToScreen("profile-view")
   }
 

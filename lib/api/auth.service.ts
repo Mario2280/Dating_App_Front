@@ -9,36 +9,117 @@ export interface AuthResponse {
   needsRegistration?: boolean
 }
 
+export interface CompleteProfileData extends ProfileData {
+  notification_settings?: {
+    matches: boolean
+    messages: boolean
+    likes: boolean
+    super_likes: boolean
+    promotions: boolean
+    updates: boolean
+  } | number
+  //wallets?: Array<{
+  //  type: "ton" | "stripe"
+  //  address?: string
+  //  chain?: string
+  //  metadata?: any
+  //}>
+}
+
 const AuthService = {
   async validateTelegramAuth(telegramUser: TelegramUser): Promise<AuthResponse> {
-    return instance({
-      url: `${UrlConfig.AUTH}/validate`,
-      method: HttpMethod.POST,
-      data: telegramUser,
-    }).then((response) => response.data)
+    try {
+      return instance({
+        url: `${UrlConfig.AUTH}/validate`,
+        method: HttpMethod.POST,
+        data: telegramUser,
+      }).then((response) => response.data)
+    } catch (error) {
+      console.error("Telegram auth validation failed:", error)
+      throw error
+    }
+  },
+
+  async createCompleteProfile(profileData: CompleteProfileData) {
+    try {
+      const response = await fetch(`${UrlConfig.PROFILE}/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Failed to create complete profile:", error)
+      throw error
+    }
   },
 
   async createProfile(profileData: ProfileData): Promise<ProfileData> {
-    return instance({
-      url: `${UrlConfig.PROFILE}/create`,
-      method: HttpMethod.POST,
-      data: profileData,
-    }).then((response) => response.data)
+    try {
+      return instance({
+        url: `${UrlConfig.PROFILE}/create`,
+        method: HttpMethod.POST,
+        data: profileData,
+      }).then((response) => response.data)
+    } catch (error) {
+      console.error("Profile creation failed:", error)
+      throw error
+    }
   },
 
   async updateProfile(profileData: Partial<ProfileData>): Promise<ProfileData> {
-    return instance({
-      url: `${UrlConfig.PROFILE}/update`,
-      method: HttpMethod.PUT,
-      data: profileData,
-    }).then((response) => response.data)
+    try {
+      return instance({
+        url: `${UrlConfig.PROFILE}/update`,
+        method: HttpMethod.PUT,
+        data: profileData,
+      }).then((response) => response.data)
+    } catch (error) {
+      console.error("Profile update failed:", error)
+      throw error
+    }
   },
 
   async getProfile(telegramId: number): Promise<ProfileData> {
-    return instance({
-      url: `${UrlConfig.PROFILE}/${telegramId}`,
-      method: HttpMethod.GET,
-    }).then((response) => response.data)
+    try {
+      return instance({
+        url: `${UrlConfig.PROFILE}/${telegramId}`,
+        method: HttpMethod.GET,
+      }).then((response) => response.data)
+    } catch (error) {
+      console.error("Profile fetch failed:", error)
+      throw error
+    }
+  },
+
+  async updateNotificationSettings(
+    telegramId: number,
+    settings: {
+      matches: boolean
+      messages: boolean
+      likes: boolean
+      super_likes: boolean
+      promotions: boolean
+      updates: boolean
+    },
+  ): Promise<void> {
+    try {
+      return instance({
+        url: `${UrlConfig.NOTIFICATIONS}/settings/${telegramId}`,
+        method: HttpMethod.PUT,
+        data: settings,
+      }).then((response) => response.data)
+    } catch (error) {
+      console.error("Notification settings update failed:", error)
+      throw error
+    }
   },
 }
 

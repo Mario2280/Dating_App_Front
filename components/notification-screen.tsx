@@ -2,6 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { getProfileData, saveProfileData } from "@/lib/telegram-auth"
+import AuthService, { type CompleteProfileData } from "@/lib/api/auth.service"
+import { useState } from "react"
 
 interface NotificationScreenProps {
   onNext: () => void
@@ -9,21 +12,58 @@ interface NotificationScreenProps {
 }
 
 export default function NotificationScreen({ onNext, onBack }: NotificationScreenProps) {
+  const [notificationSettings, setNotificationSettings] = useState({
+    matches: true,
+    messages: true,
+    likes: true,
+    super_likes: false,
+    promotions: true,
+    updates: true,
+  })
+
   const handleEnableNotifications = async () => {
     try {
-      if ("Notification" in window) {
-        const permission = await Notification.requestPermission()
-        if (permission === "granted") {
-          new Notification("Уведомления включены!", {
-            body: "Теперь вы будете получать уведомления о новых совпадениях и сообщениях.",
-            icon: "/favicon.ico",
-          })
-        }
+      // Convert notification settings to bitmask
+      const settingsBitmask =
+        (notificationSettings.matches ? 1 : 0) |
+        (notificationSettings.messages ? 2 : 0) |
+        (notificationSettings.likes ? 4 : 0) |
+        (notificationSettings.super_likes ? 8 : 0) |
+        (notificationSettings.promotions ? 16 : 0) |
+        (notificationSettings.updates ? 32 : 0)
+
+      const currentProfile = getProfileData()
+      if (!currentProfile) {
+        console.error("No profile data found")
+        onNext()
+        return
       }
+
+      const completeProfileData: CompleteProfileData = {
+        ...currentProfile,
+        notification_settings: settingsBitmask,
+        chat_id: currentProfile.chat_id || "",
+        wallets: currentProfile.wallets || [],
+      }
+
+      // Create profile on backend
+      const createdProfile = await AuthService.createCompleteProfile(completeProfileData)
+
+      // Update local storage with server response
+      saveProfileData({
+        ...createdProfile,
+        profileComplete: true,
+      })
+
+      // Open Telegram bot for notifications
+      window.open("https://t.me/SomeDatingBot?start=notify", "_blank")
+
+      onNext()
     } catch (error) {
-      console.log("Notification permission denied")
+      console.error("Failed to create profile:", error)
+      // Still proceed to next screen even if backend fails
+      onNext()
     }
-    onNext()
   }
 
   return (
@@ -62,8 +102,43 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
           </button>
 
           <p className="text-gray-600 text-lg text-center mb-12 max-w-sm">
-            Узнавайте сразу, когда у вас совпадение или новое сообщение.
+            Узнавайте сразу, когда у вас совпадение или новое сообщение. Отправьте боту команду /notify, чтобы получать
+            уведомления.
           </p>
+        </div>
+
+        <div className="px-6 space-y-4 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Настройки уведомлений</h3>
+
+          {Object.entries({
+            matches: "Новые совпадения",
+            messages: "Сообщения",
+            likes: "Лайки",
+            super_likes: "Супер-лайки",
+            promotions: "Акции и предложения",
+            updates: "Обновления приложения",
+          }).map(([key, label]) => (
+            <div key={key} className="flex items-center justify-between py-2">
+              <span className="text-gray-700">{label}</span>
+              <button
+                onClick={() =>
+                  setNotificationSettings((prev) => ({
+                    ...prev,
+                    [key]: !prev[key as keyof typeof prev],
+                  }))
+                }
+                className={`w-12 h-6 rounded-full transition-colors ${
+                  notificationSettings[key as keyof typeof notificationSettings] ? "bg-blue-500" : "bg-gray-300"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                    notificationSettings[key as keyof typeof notificationSettings] ? "translate-x-6" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
         </div>
 
         <div className="fixed bottom-8 left-6 right-6 max-w-md mx-auto">

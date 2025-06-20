@@ -6,4 +6,5 @@ export enum UrlConfig {
   MATCHES = "/matches",
   MESSAGES = "/messages",
   WALLET = "/wallet", // Add wallet endpoint
+  NOTIFICATIONS = "/notifications",
 }

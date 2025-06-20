@@ -36,10 +36,16 @@ export default function AboutMeScreen({ onNext, onBack, onUpdate, currentUser }:
     onNext()
   }
 
+  const handleBack = () => {
+    console.log("Saving bio:", bio) // Debug log
+    onUpdate({ bio })
+    onBack()
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={onNext} className="text-blue-500 text-lg font-medium">
