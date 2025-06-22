@@ -6,10 +6,10 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Crown } from "lucide-react"
 import PremiumPopup from "./premium-popup"
-
+import type { Screen } from "@/app/page"
 interface FiltersScreenProps {
   onBack: () => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
 }
 
 // Database enum mappings
@@ -77,6 +77,43 @@ const kidsOptions = {
   WANT: "Хочу детей",
 }
 
+const languageOptions = {
+  BELARUSIAN: "Белорусский",
+  RUSSIAN: "Русский",
+  ENGLISH: "Английский",
+  POLISH: "Польский",
+  UKRAINIAN: "Украинский",
+  GERMAN: "Немецкий",
+  FRENCH: "Французский",
+  SPANISH: "Испанский",
+}
+
+const livingConditionsOptions = {
+  WITH_PARENTS: "С родителями",
+  ALONE: "Один/одна",
+  WITH_ROOMMATES: "С соседями",
+  WITH_PARTNER: "С партнером",
+  OWN_APARTMENT: "Своя квартира",
+  RENT_APARTMENT: "Съемная квартира",
+}
+
+const incomeOptions = {
+  VERY_LOW: "Очень низкий",
+  LOW: "Низкий",
+  BELOW_AVERAGE: "Ниже среднего",
+  AVERAGE: "Средний",
+  ABOVE_AVERAGE: "Выше среднего",
+  HIGH: "Высокий",
+  VERY_HIGH: "Очень высокий",
+}
+
+const lastActiveOptions = {
+  1: "За последний месяц",
+  3: "За последние 3 месяца",
+  6: "За последние 6 месяцев",
+  12: "За последний год",
+}
+
 const regions = [
   "Минск, Беларусь",
   "Гомель, Беларусь",
@@ -101,6 +138,14 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
   const [selectedKids, setSelectedKids] = useState("")
   const [showPremiumPopup, setShowPremiumPopup] = useState(false)
   const [hasWallet] = useState(false)
+  const [isPremium, setIsPremium] = useState(false) // This should come from user's premium status
+
+  const [weightRange, setWeightRange] = useState([50, 80])
+  const [selectedLanguage, setSelectedLanguage] = useState("")
+  const [selectedLivingCondition, setSelectedLivingCondition] = useState("")
+  const [selectedIncome, setSelectedIncome] = useState("")
+  const [selectedLastActive, setSelectedLastActive] = useState("")
+  const [isVisible, setIsVisible] = useState(true)
 
   const [dropdownStates, setDropdownStates] = useState({
     region: false,
@@ -111,6 +156,10 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
     alcohol: false,
     smoking: false,
     kids: false,
+    language: false,
+    livingCondition: false,
+    income: false,
+    lastActive: false,
   })
 
   const toggleDropdown = (dropdown: keyof typeof dropdownStates) => {
@@ -148,6 +197,18 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
     setHeightRange(newRange)
   }
 
+  const handleWeightRangeChange = (index: number, value: number) => {
+    const newRange = [...weightRange]
+    newRange[index] = value
+    if (index === 0 && value > weightRange[1]) {
+      newRange[1] = value
+    }
+    if (index === 1 && value < weightRange[0]) {
+      newRange[0] = value
+    }
+    setWeightRange(newRange)
+  }
+
   const handleBuyPremium = () => {
     window.open("https://payment.example.com/premium", "_blank")
     setShowPremiumPopup(false)
@@ -168,29 +229,28 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
     options: Record<T, string>,
     onChange: (value: T) => void,
     dropdownKey: keyof typeof dropdownStates,
-    isPremium = false,
+    isPremiumFeature = false,
   ) => (
-    <div className={`relative ${isPremium ? "opacity-60" : ""}`}>
+    <div className={`relative ${isPremiumFeature && !isPremium ? "opacity-60" : ""}`}>
       <div className="flex justify-between items-center mb-2">
         <label className="text-sm text-gray-500">{label}</label>
-        {isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
+        {isPremiumFeature && !isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
       </div>
       <button
-        onClick={() => (isPremium ? setShowPremiumPopup(true) : toggleDropdown(dropdownKey))}
+        onClick={() => (isPremiumFeature && !isPremium ? setShowPremiumPopup(true) : toggleDropdown(dropdownKey))}
         className={`w-full p-3 bg-gray-100 rounded-2xl flex justify-between items-center ${
-          isPremium ? "cursor-not-allowed" : ""
+          isPremiumFeature && !isPremium ? "cursor-pointer" : ""
         }`}
-        disabled={isPremium}
       >
         <span className="text-lg">{value ? options[value] : "Не выбрано"}</span>
         <ChevronDown
           className={`h-5 w-5 text-gray-400 transition-transform ${
-            dropdownStates[dropdownKey] && !isPremium ? "rotate-180" : ""
+            dropdownStates[dropdownKey] && !(isPremiumFeature && !isPremium) ? "rotate-180" : ""
           }`}
         />
       </button>
 
-      {dropdownStates[dropdownKey] && !isPremium && (
+      {dropdownStates[dropdownKey] && !(isPremiumFeature && !isPremium) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-lg border z-10 max-h-48 overflow-y-auto">
           <button
             onClick={() => {
@@ -239,7 +299,7 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
           </Button>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 pb-32">
           {/* Gender Selection */}
           <div>
             <h2 className="text-xl font-semibold mb-4">Я ищу</h2>
@@ -357,32 +417,73 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
             </div>
 
             {/* Height Range - Premium */}
-            <div className="opacity-60 mb-6">
+            <div className={`mb-6 ${!isPremium ? "opacity-60" : ""}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-medium">Рост</h2>
                 <div className="flex items-center gap-2">
-                  <Crown className="h-4 w-4 text-yellow-500" />
+                  {!isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
                   <span className="text-gray-500">
                     {heightRange[0]}-{heightRange[1]} см
                   </span>
                 </div>
               </div>
-              <div className="space-y-4">
+              <div
+                className={`space-y-4 ${!isPremium ? "cursor-pointer" : ""}`}
+                onClick={() => !isPremium && setShowPremiumPopup(true)}
+              >
                 <input
                   type="range"
                   min="140"
                   max="200"
                   value={heightRange[0]}
-                  disabled
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-not-allowed"
+                  onChange={(e) => isPremium && handleHeightRangeChange(0, Number(e.target.value))}
+                  readOnly={!isPremium}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
                 <input
                   type="range"
                   min="140"
                   max="200"
                   value={heightRange[1]}
-                  disabled
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-not-allowed"
+                  onChange={(e) => isPremium && handleHeightRangeChange(1, Number(e.target.value))}
+                  readOnly={!isPremium}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Weight Range - Premium */}
+            <div className={`mb-6 ${!isPremium ? "opacity-60" : ""}`}>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium">Вес</h2>
+                <div className="flex items-center gap-2">
+                  {!isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
+                  <span className="text-gray-500">
+                    {weightRange[0]}-{weightRange[1]} кг
+                  </span>
+                </div>
+              </div>
+              <div
+                className={`space-y-4 ${!isPremium ? "cursor-pointer" : ""}`}
+                onClick={() => !isPremium && setShowPremiumPopup(true)}
+              >
+                <input
+                  type="range"
+                  min="40"
+                  max="200"
+                  value={weightRange[0]}
+                  onChange={(e) => isPremium && handleWeightRangeChange(0, Number(e.target.value))}
+                  readOnly={!isPremium}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <input
+                  type="range"
+                  min="40"
+                  max="200"
+                  value={weightRange[1]}
+                  onChange={(e) => isPremium && handleWeightRangeChange(1, Number(e.target.value))}
+                  readOnly={!isPremium}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             </div>
@@ -393,7 +494,6 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
               educationOptions,
               setSelectedEducation,
               "education",
-              true,
             )}
             {renderDropdown("Телосложение", selectedBuild, buildOptions, setSelectedBuild, "build", true)}
             {renderDropdown(
@@ -407,6 +507,45 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
             {renderDropdown("Алкоголь", selectedAlcohol, alcoholOptions, setSelectedAlcohol, "alcohol", true)}
             {renderDropdown("Курение", selectedSmoking, smokingOptions, setSelectedSmoking, "smoking", true)}
             {renderDropdown("Дети", selectedKids, kidsOptions, setSelectedKids, "kids", true)}
+            {renderDropdown("Язык", selectedLanguage, languageOptions, setSelectedLanguage, "language", true)}
+            {renderDropdown(
+              "Жилищные условия",
+              selectedLivingCondition,
+              livingConditionsOptions,
+              setSelectedLivingCondition,
+              "livingCondition",
+              true,
+            )}
+            {renderDropdown("Доход", selectedIncome, incomeOptions, setSelectedIncome, "income", true)}
+            {renderDropdown(
+              "Последняя активность",
+              selectedLastActive,
+              lastActiveOptions,
+              setSelectedLastActive,
+              "lastActive",
+              true,
+            )}
+
+            {/* Visibility Toggle - Premium */}
+            <div className={!isPremium ? "opacity-60" : ""}>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm text-gray-500">Видимость профиля</label>
+                {!isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
+              </div>
+              <button
+                onClick={() => (!isPremium ? setShowPremiumPopup(true) : setIsVisible(!isVisible))}
+                className="w-full p-3 bg-gray-100 rounded-2xl flex justify-between items-center cursor-pointer"
+              >
+                <span className="text-lg">{isVisible ? "Виден всем" : "Скрыт"}</span>
+                <div
+                  className={`w-12 h-6 rounded-full ${isVisible && isPremium ? "bg-blue-500" : "bg-gray-300"} relative transition-colors`}
+                >
+                  <div
+                    className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isVisible && isPremium ? "translate-x-6" : "translate-x-0.5"}`}
+                  />
+                </div>
+              </button>
+            </div>
           </div>
 
           <div className="fixed bottom-8 left-6 right-6">

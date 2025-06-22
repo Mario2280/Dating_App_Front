@@ -2,17 +2,18 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Heart, X, MessageSquare, Menu, RotateCcw } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import SwipeableCard from "./swipeable-card"
 import BottomNavigation from "./bottom-navigation"
 import PremiumPopup from "./premium-popup"
-
+import { useLocation } from "@/contexts/location-context"
+import type { Screen } from "@/app/page"
 interface MainScreenProps {
   onProfileClick: () => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
 }
 
 const profiles = [
@@ -55,6 +56,31 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
   const [pullUpDistance, setPullUpDistance] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
+  
+  // Access location context for background location updates
+  const { requestLocation, hasLocationPermission } = useLocation()
+
+  // Auto-request location for existing users (silently in background)
+  useEffect(() => {
+    const updateLocationForExistingUser = async () => {
+      if (!hasLocationPermission) {
+        try {
+          await requestLocation()
+          console.log("Location updated for existing user")
+        } catch (error) {
+          console.log("Background location update failed:", error)
+        }
+      }
+    }
+
+    // Update location every 5 minutes for existing users
+    const interval = setInterval(updateLocationForExistingUser, 5 * 60 * 1000)
+
+    // Initial update
+    updateLocationForExistingUser()
+
+    return () => clearInterval(interval)
+  }, [requestLocation, hasLocationPermission])
 
   const animateSwipe = (id: number, direction: "left" | "right") => {
     if (direction === "right") {

@@ -5,11 +5,11 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import BottomNavigation from "./bottom-navigation"
 import ChatScreen from "./chat-screen"
-
+import type { Screen } from "@/app/page"
 interface MessagesScreenProps {
   onBack: () => void
   onChatClick: (conversationId: number) => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
 }
 
 interface Conversation {

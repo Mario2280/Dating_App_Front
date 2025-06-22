@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import type { TelegramUser } from "@/lib/telegram-auth"
+import type { TelegramUser } from "@/lib/types"
 
 interface TelegramLoginWidgetProps {
   botName: string // Your bot username without @

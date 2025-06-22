@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import PremiumPopup from "./premium-popup"
-
+import type { Screen } from "@/app/page"
 interface ProfileViewScreenProps {
   onBack: () => void
   onPhotoClick?: (photoIndex: number) => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
   profileData?: {
     id: number
     name: string

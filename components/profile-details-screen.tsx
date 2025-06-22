@@ -144,7 +144,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
         </button>
       </div>
 
-      <div className="px-6 pt-8">
+      <div className="px-6 pt-8 pb-32">
         <h1 className="text-4xl font-bold text-gray-900 mb-12">Профиль</h1>
 
         <div className="flex justify-center mb-12">
@@ -222,7 +222,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-6 right-6 max-w-md mx-auto">
+        <div className="fixed bottom-8 left-6 right-6">
           <Button
             onClick={handleNext}
             className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"

@@ -100,7 +100,7 @@ export default function InterestsScreen({ onNext, onBack, onUpdate, currentUser 
         </button>
       </div>
 
-      <div className="px-6 pt-8">
+      <div className="px-6 pt-8 pb-32">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Интересы</h1>
         <p className="text-gray-600 text-lg mb-8">Расскажите о своих интересах — выберите то, что вас вдохновляет.</p>
 

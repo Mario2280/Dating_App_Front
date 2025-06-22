@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronLeft, ChevronDown } from "lucide-react"
-import type { ProfileData } from "@/lib/telegram-auth"
+import type { ProfileData } from "@/lib/types"
 
 interface ProfileDetailsExtendedScreenProps {
   onNext: () => void
@@ -28,7 +28,7 @@ const educationOptions = {
   HIGHER: "Высшее образование",
   BACHELOR: "Бакалавр",
   MASTER: "Магистр",
-  "P.H.D.": "Кандидат наук",
+  PHD: "Кандидат наук",
   MBA: "MBA",
 }
 
@@ -39,6 +39,7 @@ const buildOptions = {
   STOCKY: "Плотное",
   MUSCULAR: "Мускулистое",
   OVERWEIGHT: "Полное",
+  EMPTY: "",
 }
 
 const languageOptions = {
@@ -162,20 +163,20 @@ export default function ProfileDetailsExtendedScreen({
   const handleNext = () => {
     const updates: Partial<ProfileData> = {}
 
-    if (selectedPurpose) updates.purpose = selectedPurpose
-    if (selectedEducation) updates.education = selectedEducation
-    if (weight) updates.weight = Number.parseInt(weight)
-    if (height) updates.height = Number.parseInt(height)
-    if (selectedBuild) updates.build = selectedBuild
-    if (selectedLanguage) updates.language = selectedLanguage
-    if (selectedOrientation) updates.orientation = selectedOrientation
-    if (selectedAlcohol) updates.alcohol = selectedAlcohol
-    if (selectedSmoking) updates.smoking = selectedSmoking
-    if (selectedKids) updates.kids = selectedKids
-    if (selectedLivingCondition) updates.living_condition = selectedLivingCondition
-    if (selectedIncome) updates.income = selectedIncome
+    if (selectedPurpose && selectedPurpose !== "") updates.purpose = selectedPurpose
+    if (selectedEducation && selectedEducation !== "") updates.education = selectedEducation
+    if (weight && weight !== "") updates.weight = Number.parseInt(weight)
+    if (height && height !== "") updates.height = Number.parseInt(height)
+    if (selectedBuild && selectedBuild !== "") updates.build = selectedBuild
+    if (selectedLanguage && selectedLanguage !== "") updates.language = selectedLanguage
+    if (selectedOrientation && selectedOrientation !== "") updates.orientation = selectedOrientation
+    if (selectedAlcohol && selectedAlcohol !== "") updates.alcohol = selectedAlcohol
+    if (selectedSmoking && selectedSmoking !== "") updates.smoking = selectedSmoking
+    if (selectedKids && selectedKids !== "") updates.kids = selectedKids
+    if (selectedLivingCondition && selectedLivingCondition !== "") updates.living_condition = selectedLivingCondition
+    if (selectedIncome && selectedIncome !== "") updates.income = selectedIncome
 
-    console.log("Saving extended profile data:", updates) // Debug log
+    console.log("Saving extended profile data:", updates)
     onUpdate(updates)
     onNext()
   }
@@ -183,20 +184,20 @@ export default function ProfileDetailsExtendedScreen({
   const handleBack = () => {
     const updates: Partial<ProfileData> = {}
 
-    if (selectedPurpose) updates.purpose = selectedPurpose
-    if (selectedEducation) updates.education = selectedEducation
-    if (weight) updates.weight = Number.parseInt(weight)
-    if (height) updates.height = Number.parseInt(height)
-    if (selectedBuild) updates.build = selectedBuild
-    if (selectedLanguage) updates.language = selectedLanguage
-    if (selectedOrientation) updates.orientation = selectedOrientation
-    if (selectedAlcohol) updates.alcohol = selectedAlcohol
-    if (selectedSmoking) updates.smoking = selectedSmoking
-    if (selectedKids) updates.kids = selectedKids
-    if (selectedLivingCondition) updates.living_condition = selectedLivingCondition
-    if (selectedIncome) updates.income = selectedIncome
+    if (selectedPurpose && selectedPurpose !== "") updates.purpose = selectedPurpose
+    if (selectedEducation && selectedEducation !== "") updates.education = selectedEducation
+    if (weight && weight !== "") updates.weight = Number.parseInt(weight)
+    if (height && height !== "") updates.height = Number.parseInt(height)
+    if (selectedBuild && selectedBuild !== "") updates.build = selectedBuild
+    if (selectedLanguage && selectedLanguage !== "") updates.language = selectedLanguage
+    if (selectedOrientation && selectedOrientation !== "") updates.orientation = selectedOrientation
+    if (selectedAlcohol && selectedAlcohol !== "") updates.alcohol = selectedAlcohol
+    if (selectedSmoking && selectedSmoking !== "") updates.smoking = selectedSmoking
+    if (selectedKids && selectedKids !== "") updates.kids = selectedKids
+    if (selectedLivingCondition && selectedLivingCondition !== "") updates.living_condition = selectedLivingCondition
+    if (selectedIncome && selectedIncome !== "") updates.income = selectedIncome
 
-    console.log("Saving extended profile data:", updates) // Debug log
+    console.log("Saving extended profile data:", updates)
     onUpdate(updates)
     onBack()
   }
@@ -261,7 +262,7 @@ export default function ProfileDetailsExtendedScreen({
         </button>
       </div>
 
-      <div className="px-6 pt-8 pb-20">
+      <div className="px-6 pt-8 pb-32">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Детали профиля</h1>
         <p className="text-gray-600 text-lg mb-8">Расскажите больше о себе</p>
 

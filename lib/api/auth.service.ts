@@ -6,7 +6,6 @@ import type { TelegramUser, ProfileData } from "../types"
 export interface AuthResponse {
   isValid: boolean
   profile?: ProfileData
-  needsRegistration?: boolean
 }
 
 export interface CompleteProfileData extends ProfileData {
@@ -30,7 +29,7 @@ const AuthService = {
   async validateTelegramAuth(telegramUser: TelegramUser): Promise<AuthResponse> {
     try {
       return instance({
-        url: `${UrlConfig.AUTH}/validate`,
+        url: `${UrlConfig.PROFILE}/validate`,
         method: HttpMethod.POST,
         data: telegramUser,
       }).then((response) => response.data)
@@ -61,18 +60,18 @@ const AuthService = {
     }
   },
 
-  async createProfile(profileData: ProfileData): Promise<ProfileData> {
-    try {
-      return instance({
-        url: `${UrlConfig.PROFILE}/create`,
-        method: HttpMethod.POST,
-        data: profileData,
-      }).then((response) => response.data)
-    } catch (error) {
-      console.error("Profile creation failed:", error)
-      throw error
-    }
-  },
+  //async createProfile(profileData: ProfileData): Promise<ProfileData> {
+  //  try {
+  //    return instance({
+  //      url: `${UrlConfig.PROFILE}/create`,
+  //      method: HttpMethod.POST,
+  //      data: profileData,
+  //    }).then((response) => response.data)
+  //  } catch (error) {
+  //    console.error("Profile creation failed:", error)
+  //    throw error
+  //  }
+  //},
 
   async updateProfile(profileData: Partial<ProfileData>): Promise<ProfileData> {
     try {

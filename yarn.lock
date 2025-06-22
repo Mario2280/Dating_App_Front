@@ -921,6 +921,71 @@
   dependencies:
     tslib "^2.8.0"
 
+"@telegram-apps/bridge@^2.9.0":
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/bridge/-/bridge-2.9.0.tgz#5793b45db6615a85db140c5c27d1d7c37b78760c"
+  integrity sha512-r7CE4+NCiA1QVy02Fh6z990O9tBij8ogZ/OjxNP/opQ6tt0T2sqf2rjwPu4Xtt40d/JleW6L8rsokxoxoMzuZw==
+  dependencies:
+    "@telegram-apps/signals" "^1.1.2"
+    "@telegram-apps/toolkit" "^2.1.3"
+    "@telegram-apps/transformers" "^2.2.4"
+    "@telegram-apps/types" "^2.0.1"
+    better-promises "^0.4.1"
+    error-kid "^0.0.7"
+    mitt "^3.0.1"
+    valibot "1.0.0"
+
+"@telegram-apps/navigation@^1.0.14":
+  version "1.0.14"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/navigation/-/navigation-1.0.14.tgz#606df093f89d68f3013d8086acc7b63d9cc5ec3c"
+  integrity sha512-bqNgF/J8Po7ZtsELm3E1a6aPr7awwxO3sIqD8J6u12urOlGoW5+1KxKKbkPa58mgXuQdsltd8apI+OVy0IYiUA==
+
+"@telegram-apps/sdk-react@^3.3.2":
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/sdk-react/-/sdk-react-3.3.2.tgz#39287b594a0e48ed15230847c05160e415e64058"
+  integrity sha512-d2A9lv1Qfc4zORK62upowi+tj2NwYYbpV82chuoY907H6F9956zPXFdKN4+xGh4CICLZZRyLSd9xbXN6V9s1yQ==
+  dependencies:
+    "@telegram-apps/sdk" "^3.11.0"
+
+"@telegram-apps/sdk@^3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/sdk/-/sdk-3.11.0.tgz#6118cc79157ba537efe75724667dbe84cccf7a5b"
+  integrity sha512-1NfZw+2soyCnhkr0KvhmYs7/dP4Sgcz+duD7STeZh2OxCMHwqwvez+1vr5fJfl/pLP4TAibqIOUu1GmRveS7ag==
+  dependencies:
+    "@telegram-apps/bridge" "^2.9.0"
+    "@telegram-apps/navigation" "^1.0.14"
+    "@telegram-apps/signals" "^1.1.2"
+    "@telegram-apps/toolkit" "^2.1.3"
+    "@telegram-apps/transformers" "^2.2.4"
+    "@telegram-apps/types" "^2.0.1"
+    better-promises "^0.4.1"
+    error-kid "^0.0.7"
+    valibot "1.0.0"
+
+"@telegram-apps/signals@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/signals/-/signals-1.1.2.tgz#a533420b658b555c2fb85063f87b969792a57a4b"
+  integrity sha512-1P1kdCLX7MfETGPxH7f3UZKIsdE7Tz5S7QmN4Km1sbYQMakD5Bi1NecSMR7/wnHp50gWMI1JzENcMtCEmouhSg==
+
+"@telegram-apps/toolkit@^2.1.3":
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/toolkit/-/toolkit-2.1.3.tgz#af323b67fe225de52a4c70ca91263d288e19d09f"
+  integrity sha512-LPUBL7hxQTOr+Dowyk9a1O82nQS4ja4+OYiYWtvqq5nNUHC6Gbbus0zGWCbFcj9CLnIzaeb5HWOg5iSnhoRcyg==
+
+"@telegram-apps/transformers@^2.2.4":
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/transformers/-/transformers-2.2.4.tgz#842fea2f527f1de3f61ba38d0c2356bf54edcb5b"
+  integrity sha512-PZemIzOIdz6VwS9vMbwr+Fco+jyjRVAUrkDex1ZS3As4eegJInl6vj43YaO0n8UEWdANzUF8ho4lQtkLHvwwiA==
+  dependencies:
+    "@telegram-apps/toolkit" "^2.1.3"
+    "@telegram-apps/types" "^2.0.1"
+    valibot "1.0.0-beta.14"
+
+"@telegram-apps/types@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@telegram-apps/types/-/types-2.0.1.tgz#4846de852260d4fcd97d0e076fc882e6a6ee4d44"
+  integrity sha512-l9BSXPEhtZG6q6MCa30p5/x0XWwG4ymEOrLD8YN9TEAil6qjYwDJea9R3gUjxsadsJW7XtaZkg2UD6k7owfqjw==
+
 "@tonconnect/isomorphic-eventsource@^0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@tonconnect/isomorphic-eventsource/-/isomorphic-eventsource-0.0.2.tgz#e58c44cf9953e090f2c35da9a638946ddb614be5"
@@ -1022,9 +1087,9 @@
   integrity sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==
 
 "@types/node@^22":
-  version "22.15.31"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.31.tgz#454f11e2061150135c8353d7f3b3b1823fca9f3f"
-  integrity sha512-jnVe5ULKl6tijxUhvQeNbQG/84fHfg+yMak02cT8QVhBx/F05rAVxCGBYYTh2EKz22D6JF5ktXuNwdx7b9iEGw==
+  version "22.15.32"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.15.32.tgz#c301cc2275b535a5e54bb81d516b1d2e9afe06e5"
+  integrity sha512-3jigKqgSjsH6gYZv2nEsqdXfZqIFGAV36XYYjf9KGZ3PSG+IhLecqPnI310RvjutyMwifE2hhhNEklOUrvx/wA==
   dependencies:
     undici-types "~6.21.0"
 
@@ -1105,9 +1170,9 @@ autoprefixer@^10.4.20:
     postcss-value-parser "^4.2.0"
 
 axios@latest:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.9.0.tgz#25534e3b72b54540077d33046f77e3b8d7081901"
-  integrity sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.10.0.tgz#af320aee8632eaf2a400b6a1979fa75856f38d54"
+  integrity sha512-/1xYAC4MP/HEG+3duIhFr4ZQXR4sQXOIe+o6sdqzeykGLx6Upp/1p8MHqhINOvGeP7xyNHe7tsiJByc4SSVUxw==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
@@ -1117,6 +1182,13 @@ balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
+
+better-promises@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/better-promises/-/better-promises-0.4.1.tgz#37d23067d918160fdc8b0a074cb39e5afe630f3d"
+  integrity sha512-cDW7eMvhvCoWzSih5o/OxsAgTUfP05yGMq77xNZUTmcZoNU9vEeFZJ+yJJi4lnocvxFrVFKsG0Yxt7ZnuYJEig==
+  dependencies:
+    error-kid "^0.0.7"
 
 binary-extensions@^2.0.0:
   version "2.3.0"
@@ -1168,9 +1240,9 @@ camelcase-css@^2.0.1:
   integrity sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==
 
 caniuse-lite@^1.0.30001579, caniuse-lite@^1.0.30001702, caniuse-lite@^1.0.30001718:
-  version "1.0.30001722"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001722.tgz#ec25a2b3085b25b9079b623db83c22a70882ce85"
-  integrity sha512-DCQHBBZtiK6JVkAGw7drvAMK0Q0POD/xZvEmDp6baiMMP6QXXk9HpD6mNYBZWhOPG6LvIDb82ITqtWjhDckHCA==
+  version "1.0.30001724"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001724.tgz#312e163553dd70d2c0fb603d74810c85d8ed94a0"
+  integrity sha512-WqJo7p0TbHDOythNTqYujmaJTvtYRZrjpP8TCvH6Vb9CYJerJNKamKzIWOM4BkQatWj9H2lYulpdAQNBe7QhNA==
 
 chokidar@^3.6.0:
   version "3.6.0"
@@ -1417,9 +1489,9 @@ eastasianwidth@^0.2.0:
   integrity sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==
 
 electron-to-chromium@^1.5.160:
-  version "1.5.166"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.166.tgz#3fff386ed473cc2169dbe2d3ace9592262601114"
-  integrity sha512-QPWqHL0BglzPYyJJ1zSSmwFFL6MFXhbACOCcsCdUMCkzPdS9/OIBVxg516X/Ado2qwAq8k0nJJ7phQPCqiaFAw==
+  version "1.5.171"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.171.tgz#e552b4fd73d4dd941ee4c70ae288a8a39f818726"
+  integrity sha512-scWpzXEJEMrGJa4Y6m/tVotb0WuvNmasv3wWVzUAeCgKU0ToFOhUW6Z+xWnRQANMYGxN4ngJXIThgBJOqzVPCQ==
 
 embla-carousel-react@latest:
   version "8.6.0"
@@ -1448,6 +1520,11 @@ emoji-regex@^9.2.2:
   version "9.2.2"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-9.2.2.tgz#840c8803b0d8047f4ff0cf963176b32d4ef3ed72"
   integrity sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==
+
+error-kid@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/error-kid/-/error-kid-0.0.7.tgz#43c0646d7b359acae5737f614f21a9ece2c04e9a"
+  integrity sha512-8mFs7ZaDWlBFgjOy4lHLMCe2+KZfZXGx5GOgh2VQ/M1CCIvSWzbl2OMl+5fdZgrgoUfhTeF+NPhmqfEvUhN8yw==
 
 es-define-property@^1.0.1:
   version "1.0.1"
@@ -1551,12 +1628,12 @@ fraction.js@^4.3.7:
   integrity sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==
 
 framer-motion@latest:
-  version "12.17.3"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.17.3.tgz#9f39d051d6d1d57d93dee991047b6ddf537f42d9"
-  integrity sha512-+1GMxQvZGUu20clzYdUWQY+iUWGBFc6UmpxvZBJjWu++rPdj7imXcQITzVs+QLKyjOpLoPOOar2KAOeYL88YQg==
+  version "12.18.1"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.18.1.tgz#783dc9ea7c816d315c6eebc49cd3a82c5fc50615"
+  integrity sha512-6o4EDuRPLk4LSZ1kRnnEOurbQ86MklVk+Y1rFBUKiF+d2pCdvMjWVu0ZkyMVCTwl5UyTH2n/zJEJx+jvTYuxow==
   dependencies:
-    motion-dom "^12.17.3"
-    motion-utils "^12.12.1"
+    motion-dom "^12.18.1"
+    motion-utils "^12.18.1"
     tslib "^2.4.0"
 
 fsevents@~2.3.2:
@@ -1797,17 +1874,22 @@ minimatch@^9.0.4:
   resolved "https://registry.yarnpkg.com/minipass/-/minipass-7.1.2.tgz#93a9626ce5e5e66bd4db86849e7515e92340a707"
   integrity sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==
 
-motion-dom@^12.17.3:
-  version "12.17.3"
-  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.17.3.tgz#4d56225a6a9ef51c40a329f5a9174a511b2dafee"
-  integrity sha512-nJrH4O9Z6lBSgllD5t+2lF1O8LkBxOq9QSUUmygHJVzHiTLaYpZRgd+U70919IL0CMbFBaFGEJ8hDSwnrmcyZw==
-  dependencies:
-    motion-utils "^12.12.1"
+mitt@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/mitt/-/mitt-3.0.1.tgz#ea36cf0cc30403601ae074c8f77b7092cdab36d1"
+  integrity sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==
 
-motion-utils@^12.12.1:
-  version "12.12.1"
-  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.12.1.tgz#63e28751325cb9d1cd684f3c273a570022b0010e"
-  integrity sha512-f9qiqUHm7hWSLlNW8gS9pisnsN7CRFRD58vNjptKdsqFLpkVnX00TNeD6Q0d27V9KzT7ySFyK1TZ/DShfVOv6w==
+motion-dom@^12.18.1:
+  version "12.18.1"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.18.1.tgz#3a4d6b7f4a7940393ffdd60ec44f636d3472948f"
+  integrity sha512-dR/4EYT23Snd+eUSLrde63Ws3oXQtJNw/krgautvTfwrN/2cHfCZMdu6CeTxVfRRWREW3Fy1f5vobRDiBb/q+w==
+  dependencies:
+    motion-utils "^12.18.1"
+
+motion-utils@^12.18.1:
+  version "12.18.1"
+  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.18.1.tgz#d7543c2bc15e843286cbb86119f011da0a78515b"
+  integrity sha512-az26YDU4WoDP0ueAkUtABLk2BIxe28d8NH1qWT8jPGhPyf44XTdDUh8pDk9OPphaSrR9McgpcJlgwSOIw/sfkA==
 
 mz@^2.7.0:
   version "2.7.0"
@@ -1980,9 +2062,9 @@ postcss@8.4.31:
     source-map-js "^1.0.2"
 
 postcss@^8.4.47, postcss@^8.5:
-  version "8.5.5"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.5.tgz#04de7797f6911fb1c96550e96616d08681537ef3"
-  integrity sha512-d/jtm+rdNT8tpXuHY5MMtcbJFBkhXE6593XVR9UoGCH8jSFGci7jGvMGH5RYd5PBJW+00NZQt6gf7CbagJCrhg==
+  version "8.5.6"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.6.tgz#2825006615a619b4f62a9e7426cc120b349a8f3c"
+  integrity sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==
   dependencies:
     nanoid "^3.3.11"
     picocolors "^1.1.1"
@@ -2024,9 +2106,9 @@ react-dom@^19:
     scheduler "^0.26.0"
 
 react-hook-form@latest:
-  version "7.57.0"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.57.0.tgz#d0bb0c84060c6b9282d99c64566ec919dfca9409"
-  integrity sha512-RbEks3+cbvTP84l/VXGUZ+JMrKOS8ykQCRYdm5aYsxnDquL0vspsyNhGRO7pcH6hsZqWlPOjLye7rJqdtdAmlg==
+  version "7.58.1"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.58.1.tgz#b755acc1b42a19e4253c878b766e4c5ebd070fe8"
+  integrity sha512-Lml/KZYEEFfPhUVgE0RdCVpnC4yhW+PndRhbiTtdvSlQTL8IfVR+iQkBjLIvmmc6+GGoVeM11z37ktKFPAb0FA==
 
 react-is@^16.13.1:
   version "16.13.1"
@@ -2058,9 +2140,9 @@ react-remove-scroll@^2.6.3:
     use-sidecar "^1.1.3"
 
 react-resizable-panels@latest:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/react-resizable-panels/-/react-resizable-panels-3.0.2.tgz#c059bd1317eb24ae0d1065a15ab2280f1e7f9e90"
-  integrity sha512-j4RNII75fnHkLnbsTb5G5YsDvJsSEZrJK2XSF2z0Tc2jIonYlIVir/Yh/5LvcUFCfs1HqrMAoiBFmIrRjC4XnA==
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/react-resizable-panels/-/react-resizable-panels-3.0.3.tgz#4da138dd8641b5caf9c746bf94c2152b7fe9bf0a"
+  integrity sha512-7HA8THVBHTzhDK4ON0tvlGXyMAJN1zBeRpuyyremSikgYh2ku6ltD7tsGQOcXx4NKPrZtYCm/5CBr+dkruTGQw==
 
 react-smooth@^4.0.4:
   version "4.0.4"
@@ -2116,9 +2198,9 @@ recharts-scale@^0.4.4:
     decimal.js-light "^2.4.1"
 
 recharts@latest:
-  version "2.15.3"
-  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.15.3.tgz#b94d05e91e3a5df1b02368ef64400dec9e9a77d4"
-  integrity sha512-EdOPzTwcFSuqtvkDoaM5ws/Km1+WTAO2eizL7rqiG0V2UVhTnz0m7J2i0CjVPUCdEkZImaWvXLbZDS2H5t6GFQ==
+  version "2.15.4"
+  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.15.4.tgz#0ed3e66c0843bcf2d9f9a172caf97b1d05127a5f"
+  integrity sha512-UT/q6fwS3c1dHbXv2uFgYJ9BMFHu3fwnd7AYZaEQhXuYQ4hgsxLvsUXzGdKeZrW5xopzDCvuA2N41WJ88I7zIw==
   dependencies:
     clsx "^2.0.0"
     eventemitter3 "^4.0.1"
@@ -2438,6 +2520,16 @@ util-deprecate@^1.0.2:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
 
+valibot@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/valibot/-/valibot-1.0.0.tgz#1f82514296abcd23d0ae4280088ba85f8651c564"
+  integrity sha512-1Hc0ihzWxBar6NGeZv7fPLY0QuxFMyxwYR2sF1Blu7Wq7EnremwY2W02tit2ij2VJT8HcSkHAQqmFfl77f73Yw==
+
+valibot@1.0.0-beta.14:
+  version "1.0.0-beta.14"
+  resolved "https://registry.yarnpkg.com/valibot/-/valibot-1.0.0-beta.14.tgz#a02dab44ec538d4b2a36da4a2770eddc64f94da6"
+  integrity sha512-tLyV2rE5QL6U29MFy3xt4AqMrn+/HErcp2ZThASnQvPMwfSozjV1uBGKIGiegtZIGjinJqn0SlBdannf18wENA==
+
 vaul@latest:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vaul/-/vaul-1.1.2.tgz#c959f8b9dc2ed4f7d99366caee433fbef91f5ba9"
@@ -2509,6 +2601,6 @@ yaml@^2.3.4:
   integrity sha512-4lLa/EcQCB0cJkyts+FpIRx5G/llPxfP6VQU5KByHEhLxY3IJCH0f0Hy1MHI8sClTvsIb8qwRJ6R/ZdlDJ/leQ==
 
 zod@^3.24.1:
-  version "3.25.63"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.63.tgz#5eac66b56aa9f5e1cd3604dd541b819110474efa"
-  integrity sha512-3ttCkqhtpncYXfP0f6dsyabbYV/nEUW+Xlu89jiXbTBifUfjaSqXOG6JnQPLtqt87n7KAmnMqcjay6c0Wq0Vbw==
+  version "3.25.67"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.67.tgz#62987e4078e2ab0f63b491ef0c4f33df24236da8"
+  integrity sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==

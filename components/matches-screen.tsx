@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Heart, X } from "lucide-react"
 import Image from "next/image"
 import BottomNavigation from "./bottom-navigation"
-
+import type { Screen } from "@/app/page"
 interface MatchesScreenProps {
   onBack: () => void
   onChatClick: () => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
 }
 
 interface Match {

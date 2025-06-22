@@ -7,9 +7,8 @@ import {
   getTelegramUser,
   checkUserRegistration,
   clearTelegramAuth,
-  type TelegramUser,
-  type ProfileData,
 } from "@/lib/telegram-auth"
+import type {TelegramUser, ProfileData} from "@/lib/types"
 import LoadingScreen from "./loading-screen"
 
 
@@ -53,21 +52,14 @@ const AuthCheckScreen: React.FC<AuthCheckScreenProps> = ({
         // Check if user is a moderator
         // In a real app, this would come from the backend in userProfile
         // For now, we'll check a mock list of moderator IDs
-        const isModerator = checkIfModerator(userProfile.telegramId)
+        const isModerator = checkIfModerator(userProfile.telegram_id)
 
         // Add moderator flag to profile data
         const profileWithRole = {
           ...userProfile,
           isModerator,
         }
-
-        if (userProfile.profileComplete) {
-          // User exists and has completed registration
-          onAuthenticated(profileWithRole)
-        } else {
-          // User exists but hasn't completed registration
-          onAuthenticated(profileWithRole)
-        }
+        onAuthenticated(profileWithRole)
       } else {
         // User is authenticated but not registered or validation failed
         onWelcomeForNewUser(telegramUser)

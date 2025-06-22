@@ -74,7 +74,7 @@ export default function GenderSelectionScreen({ onNext, onBack, onUpdate, curren
             onClick={handleNext}
             className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
           >
-            Continue
+            Продолжить
           </Button>
         </div>
       </div>

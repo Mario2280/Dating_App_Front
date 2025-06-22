@@ -8,9 +8,14 @@ export interface TelegramUser {
   hash: string
 }
 
+
+export interface LocationData {
+  latitude: number
+  longitude: number
+  accuracy: number
+}
 export interface ProfileData {
   telegram_id: number
-  chat_id: string
   name: string
   age: number
   gender?: "MALE" | "FEMALE"
@@ -33,16 +38,15 @@ export interface ProfileData {
     | "HIGHER"
     | "BACHELOR"
     | "MASTER"
-    | "P.H.D."
+    | "PHD"
     | "MBA"
   interests?: string[]
-  location: string
+  location: LocationData | string
   photos?: string[]
   profile_photo?: string // Add this field for storing the main profile photo
   payment_methods?: string[]
-  isRegistered: boolean
-  profileComplete: boolean
   wallets?: WalletInfo[]
+  isModerator?: boolean;
 }
 
 export interface WalletInfo {

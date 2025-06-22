@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronLeft, Camera, Plus, ChevronDown, Check, Calendar, Wallet } from "lucide-react"
+import { ChevronLeft, Camera, Plus, ChevronDown, Check, Calendar, Wallet, Crown } from "lucide-react"
 import Image from "next/image"
 import BottomNavigation from "./bottom-navigation"
 import ScrollingDatePickerModal from "./scrolling-date-picker"
@@ -13,11 +13,12 @@ import InstagramOAuthConnector from "./instagram-oauth-connector"
 import WalletService from "@/lib/api/wallet.service"
 import type { WalletInfo } from "@/lib/types"
 import WalletConnectionModal from "./wallet-connection-modal"
-
+import PremiumPopup from "./premium-popup"
+import type { Screen } from "@/app/page"
 interface ProfileEditScreenProps {
   onBack: () => void
   onSave: () => void
-  navigateToScreen: (screen: string) => void
+  navigateToScreen: (screen: Screen) => void
 }
 
 // Database enum mappings
@@ -136,23 +137,23 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
 
   // Basic info
   const [age, setAge] = useState(19)
-  const [selectedGender, setSelectedGender] = useState<keyof typeof genderOptions>("FEMALE")
+  const [selectedGender, setSelectedGender] = useState<keyof typeof genderOptions | "">("")
   const [birthDate, setBirthDate] = useState("11 июля 2005")
   const [location, setLocation] = useState("Минск, Беларусь")
 
   // Profile details
-  const [selectedPurpose, setSelectedPurpose] = useState<keyof typeof purposeOptions>("RELATIONSHIP")
-  const [selectedEducation, setSelectedEducation] = useState<keyof typeof educationOptions>("HIGHER")
+  const [selectedPurpose, setSelectedPurpose] = useState<keyof typeof purposeOptions | "">("")
+  const [selectedEducation, setSelectedEducation] = useState<keyof typeof educationOptions | "">("")
   const [weight, setWeight] = useState(55)
   const [height, setHeight] = useState(165)
-  const [selectedBuild, setSelectedBuild] = useState<keyof typeof buildOptions>("ATHLETIC")
-  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof languageOptions>("RUSSIAN")
-  const [selectedOrientation, setSelectedOrientation] = useState<keyof typeof orientationOptions>("HETEROSEXUAL")
-  const [selectedAlcohol, setSelectedAlcohol] = useState<keyof typeof alcoholOptions>("RARELY")
-  const [selectedSmoking, setSelectedSmoking] = useState<keyof typeof smokingOptions>("NEVER")
-  const [selectedKids, setSelectedKids] = useState<keyof typeof kidsOptions>("WANT")
-  const [selectedLivingCondition, setSelectedLivingCondition] = useState<keyof typeof livingConditionsOptions>("RENT")
-  const [selectedIncome, setSelectedIncome] = useState<keyof typeof incomeOptions>("AVERAGE")
+  const [selectedBuild, setSelectedBuild] = useState<keyof typeof buildOptions | "">("")
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof languageOptions | "">("")
+  const [selectedOrientation, setSelectedOrientation] = useState<keyof typeof orientationOptions | "">("")
+  const [selectedAlcohol, setSelectedAlcohol] = useState<keyof typeof alcoholOptions | "">("")
+  const [selectedSmoking, setSelectedSmoking] = useState<keyof typeof smokingOptions | "">("")
+  const [selectedKids, setSelectedKids] = useState<keyof typeof kidsOptions | "">("")
+  const [selectedLivingCondition, setSelectedLivingCondition] = useState<keyof typeof livingConditionsOptions | "">("")
+  const [selectedIncome, setSelectedIncome] = useState<keyof typeof incomeOptions | "">("")
 
   // Social media
   // Remove the Instagram URL state and input
@@ -180,6 +181,11 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     promotions: false,
     updates: true,
   })
+
+  // Add visibility state
+  const [profileVisible, setProfileVisible] = useState(true)
+  const [isPremium, setIsPremium] = useState(false) // This should come from user's premium status
+  const [showPremiumPopup, setShowPremiumPopup] = useState(false)
 
   // Wallet state
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null)
@@ -221,6 +227,19 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     }
 
     fetchWalletData()
+  }, [])
+
+  // Add useEffect to load user profile data
+  useEffect(() => {
+    // This should load actual user data - for now using placeholder logic
+    // In a real app, you'd fetch this from your user context or API
+    const loadUserData = () => {
+      // Only set values if they exist in user data
+      // These would come from your actual user data source
+      // For now, keeping the existing demo data as fallbacks only if no real data exists
+    }
+
+    loadUserData()
   }, [])
 
   const toggleDropdown = (dropdown: keyof typeof dropdownStates) => {
@@ -275,6 +294,21 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     setWalletConnected(true)
     setShowWalletModal(false)
   }
+
+  const handlePremiumFeature = (action: () => void) => {
+    if (isPremium) {
+      action()
+    } else {
+      setShowPremiumPopup(true)
+    }
+  }
+
+  const handleVisibilityToggle = () => {
+    handlePremiumFeature(() => {
+      setProfileVisible(!profileVisible)
+    })
+  }
+
   const renderDropdown = <T extends string>(
     label: string,
     value: T,
@@ -288,7 +322,9 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         onClick={() => toggleDropdown(dropdownKey)}
         className="w-full p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center"
       >
-        <span>{options[value]}</span>
+        <span className={value && value !== "" ? "text-gray-900" : "text-gray-500"}>
+          {value && value !== "" ? options[value] : "Не выбрано"}
+        </span>
         <ChevronDown
           className={`h-5 w-5 text-gray-400 transition-transform ${dropdownStates[dropdownKey] ? "rotate-180" : ""}`}
         />
@@ -296,6 +332,15 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
 
       {dropdownStates[dropdownKey] && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border z-10 max-h-48 overflow-y-auto">
+          <button
+            onClick={() => {
+              onChange("" as T)
+              toggleDropdown(dropdownKey)
+            }}
+            className="w-full p-3 text-left hover:bg-gray-50 first:rounded-t-xl text-gray-500"
+          >
+            Не выбрано
+          </button>
           {Object.entries(options).map(([key, label]) => (
             <button
               key={key}
@@ -303,7 +348,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
                 onChange(key as T)
                 toggleDropdown(dropdownKey)
               }}
-              className={`w-full p-3 text-left hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl ${
+              className={`w-full p-3 text-left hover:bg-gray-50 last:rounded-b-xl ${
                 value === key ? "bg-blue-50 text-blue-600" : ""
               }`}
             >
@@ -327,7 +372,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         </Button>
       </div>
 
-      <div className="px-6 pt-6 pb-6 space-y-8 max-h-screen overflow-y-auto">
+      <div className="px-6 pt-6 pb-32 space-y-8 max-h-screen overflow-y-auto">
         {/* Profile Photo */}
         <div className="flex justify-center">
           <div className="relative">
@@ -725,6 +770,52 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
                 />
               </button>
             </div>
+            <div className="pt-4 border-t border-gray-200">
+              <button
+                onClick={() => window.open("https://t.me/SomeDatingBot?start=notify", "_blank")}
+                className="w-full text-lg font-semibold text-gray-900 mb-2 text-center hover:text-blue-500 transition-colors p-3 bg-blue-50 rounded-xl"
+              >
+                Открыть чат с ботом
+              </button>
+              <p className="text-sm text-gray-500 text-center">
+                Отправьте боту команду /notify, чтобы получать уведомления в Telegram
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Privacy Settings */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Настройки приватности</h2>
+
+          <div className="space-y-3">
+            <div
+              className={`flex justify-between items-center p-3 bg-gray-50 rounded-xl ${!isPremium ? "opacity-60" : ""}`}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <div className="font-medium">Видимость профиля</div>
+                  {!isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {profileVisible
+                    ? "Ваш профиль виден другим пользователям"
+                    : "Ваш профиль скрыт от других пользователей"}
+                </div>
+              </div>
+              <button
+                onClick={() => (!isPremium ? setShowPremiumPopup(true) : setProfileVisible(!profileVisible))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  profileVisible && isPremium ? "bg-blue-500" : "bg-gray-300"
+                } ${!isPremium ? "cursor-not-allowed" : ""}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    profileVisible && isPremium ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -735,6 +826,18 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         onClose={() => setShowDatePicker(false)}
         onSelect={handleDateSelect}
         initialDate={birthDate}
+      />
+
+      {/* Premium Popup */}
+      <PremiumPopup
+        isOpen={showPremiumPopup}
+        onClose={() => setShowPremiumPopup(false)}
+        feature="Управление видимостью профиля"
+        description="Скрывайте свой профиль от других пользователей и контролируйте, кто может вас найти"
+        onUpgrade={() => {
+          setShowPremiumPopup(false)
+          navigateToScreen("premium")
+        }}
       />
 
       {/* Bottom Navigation */}

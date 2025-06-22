@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import AuthCheckScreen from "@/components/auth-check-screen"
-import WelcomeScreen from "@/components/welcome-screen"
+//import WelcomeScreen from "@/components/welcome-screen"
 import GenderSelectionScreen from "@/components/gender-selection-screen"
 import ProfileDetailsScreen from "@/components/profile-details-screen"
 import BirthdayScreen from "@/components/birthday-screen"
@@ -26,6 +26,10 @@ import ProfileDetailsExtendedScreen from "@/components/profile-details-extended-
 import type { TelegramUser, ProfileData } from "@/lib/types"
 import ProfileCompletionScreen from "@/components/profile-completion-screen"
 import ModerationPanelScreen from "@/components/moderator-panel-screen"
+import dynamic from 'next/dynamic';
+ 
+const WelcomeScreenComp = dynamic(() => import("@/components/welcome-screen"), { ssr: false });
+
 
 export type Screen =
   | "auth-check"
@@ -61,6 +65,8 @@ export default function DatingApp() {
 
   // Load profile data from localStorage on component mount
   useEffect(() => {
+    
+
     const savedProfile = getProfileData()
     if (savedProfile) {
       setCurrentUser(savedProfile)
@@ -71,6 +77,7 @@ export default function DatingApp() {
     setCurrentScreen(screen)
   }
 
+
   const handleAuthenticated = (profile: ProfileData) => {
     setCurrentUser(profile)
     saveProfileData(profile)
@@ -78,10 +85,8 @@ export default function DatingApp() {
     // Check if user is moderator and redirect accordingly
     if (profile.isModerator) {
       navigateToScreen("moderator-panel")
-    } else if (profile.profileComplete) {
-      navigateToScreen("main")
     } else {
-      navigateToScreen("gender")
+      navigateToScreen("main")
     }
   }
 
@@ -100,8 +105,6 @@ export default function DatingApp() {
       name: `${telegramUser.first_name}${telegramUser.last_name ? ` ${telegramUser.last_name}` : ""}`,
       age: 18,
       location: "",
-      isRegistered: true,
-      profileComplete: false,
     }
 
     setCurrentUser(profileData)
@@ -116,11 +119,12 @@ export default function DatingApp() {
       saveProfileData(updatedProfile) // Save the complete profile, not just updates
       console.log("Profile updated and saved:", updatedProfile) // Debug log
     }
+    navigateToScreen("main")
   }
 
   const handleProfileComplete = () => {
     if (currentUser) {
-      const updatedProfile = { ...currentUser, profileComplete: true }
+      const updatedProfile = { ...currentUser }
       setCurrentUser(updatedProfile)
       saveProfileData(updatedProfile)
     }
@@ -149,7 +153,7 @@ export default function DatingApp() {
         )
       case "welcome":
         return (
-          <WelcomeScreen
+          <WelcomeScreenComp
             onNext={() => navigateToScreen("gender")}
             onAuthenticated={handleTelegramAuth}
             authenticatedUser={authenticatedTelegramUser}
@@ -241,7 +245,7 @@ export default function DatingApp() {
         return (
           <ProfileEditScreen
             onBack={() => navigateToScreen("main")}
-            onSave={() => navigateToScreen("main")}
+            onSave={() => handleUpdateProfile()}
             navigateToScreen={navigateToScreen}
           />
         )
@@ -268,7 +272,7 @@ export default function DatingApp() {
       case "moderator-panel":
         return <ModerationPanelScreen onBack={() => navigateToScreen("main")} />
       default:
-        return <WelcomeScreen onNext={() => navigateToScreen("gender")} />
+        return <WelcomeScreenComp onNext={() => navigateToScreen("gender")} />
     }
   }
 

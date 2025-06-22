@@ -1,5 +1,4 @@
 export enum UrlConfig {
-  AUTH = "/auth",
   PROFILE = "/profile",
   MEDIA = "/media",
   PAYMENT = "/payment",

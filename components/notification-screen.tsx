@@ -42,7 +42,6 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
       const completeProfileData: CompleteProfileData = {
         ...currentProfile,
         notification_settings: settingsBitmask,
-        chat_id: currentProfile.chat_id || "",
         wallets: currentProfile.wallets || [],
       }
 
@@ -52,7 +51,6 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
       // Update local storage with server response
       saveProfileData({
         ...createdProfile,
-        profileComplete: true,
       })
 
       // Open Telegram bot for notifications
@@ -77,7 +75,7 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
         </button>
       </div>
 
-      <div className="px-6 pt-8">
+      <div className="px-6 pt-8 pb-32">
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="mb-12">
             <div className="relative">
@@ -98,7 +96,7 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
             onClick={handleEnableNotifications}
             className="text-3xl font-bold text-gray-900 mb-4 text-center hover:text-blue-500 transition-colors"
           >
-            Включить оповещения
+            Открыть чат с ботом
           </button>
 
           <p className="text-gray-600 text-lg text-center mb-12 max-w-sm">
@@ -107,7 +105,7 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
           </p>
         </div>
 
-        <div className="px-6 space-y-4 mb-8">
+        <div className="px-6 space-y-4 mb-32">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Настройки уведомлений</h3>
 
           {Object.entries({
@@ -141,7 +139,7 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
           ))}
         </div>
 
-        <div className="fixed bottom-8 left-6 right-6 max-w-md mx-auto">
+        <div className="fixed bottom-8 left-6 right-6">
           <Button
             onClick={onNext}
             className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
