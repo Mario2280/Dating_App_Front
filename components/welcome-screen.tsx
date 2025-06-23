@@ -10,7 +10,7 @@ import { saveTelegramUser, saveProfileData, getTelegramUser } from "@/lib/telegr
 import type { TelegramUser, WalletInfo } from "@/lib/types"
 import Image from "next/image"
 import WalletConnectionStub from "./wallet-connection-stub"
-
+import WebApp from "@twa-dev/sdk"
 interface WelcomeScreenProps {
   onNext: () => void
   onAuthenticated?: (telegramUser: TelegramUser) => void
@@ -28,6 +28,10 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
   const [showLocationStep, setShowLocationStep] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
+  WebApp.ready() // или await sdk.ready()
+
+  // После этого можно безопасно работать с API
+  WebApp.expand()
   // Check for existing user on mount
   useEffect(() => {
     const checkExistingUser = () => {
@@ -188,8 +192,8 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
               {/* Animated step indicator */}
               <div className="flex items-center justify-center mb-8">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -197,14 +201,18 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                       />
                     </svg>
                   </div>
-                  <div className="w-8 h-1 bg-gray-300 rounded"></div>
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                      locationGranted ? "bg-green-500" : "bg-blue-500 animate-pulse"
+                    className={`w-12 h-2 rounded transition-all duration-500 ${
+                      locationGranted ? "bg-green-500" : "bg-gray-300"
+                    }`}
+                  ></div>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+                      locationGranted ? "bg-green-500 scale-110" : "bg-orange-500 animate-pulse scale-105"
                     }`}
                   >
                     {locationGranted ? (
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path
                           fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -212,19 +220,54 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                         />
                       </svg>
                     ) : (
-                      <span className="text-white text-sm font-bold">2</span>
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     )}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                {/* Location Permission Section */}
-                <LocationManager
-                  onLocationGranted={handleLocationGranted}
-                  onLocationDenied={handleLocationDenied}
-                  showAsCard={true}
-                />
+                {/* Location Permission Section with pulsing hint */}
+                <div className="relative">
+                  {!locationGranted && (
+                    <>
+                      <div className="absolute inset-0 rounded-2xl border-2 border-orange-500 animate-pulse"></div>
+                      <div className="absolute inset-0 rounded-2xl border border-orange-400 animate-ping"></div>
+                    </>
+                  )}
+
+                  <div className="relative">
+                    <LocationManager
+                      onLocationGranted={handleLocationGranted}
+                      onLocationDenied={handleLocationDenied}
+                      showAsCard={true}
+                    />
+                  </div>
+                </div>
+
+                {/* Step indicator for location */}
+                <div className="text-center">
+                  <div
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                      locationGranted ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-600"
+                    }`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        locationGranted ? "bg-green-500" : "bg-orange-500 animate-pulse"
+                      }`}
+                    ></div>
+                    <span className="text-sm font-medium">
+                      {locationGranted ? "Шаг 2: Геолокация разрешена ✓" : "Шаг 2: Разрешите доступ к геолокации"}
+                    </span>
+                  </div>
+                </div>
 
                 {/* Optional: Wallet Connection */}
                 {walletConnected ? (
@@ -233,10 +276,10 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                   <Button
                     onClick={() => setShowWalletModal(true)}
                     variant="outline"
-                    className="w-full h-14 text-lg font-medium rounded-2xl flex items-center gap-3 border-blue-500 text-blue-500"
+                    className="w-full h-14 text-lg font-medium rounded-2xl flex items-center gap-3 border-blue-500 text-blue-500 opacity-75 hover:opacity-100 transition-opacity"
                   >
                     <Wallet className="h-5 w-5" />
-                    Привязать кошелек (необязательно)
+                    Привязать кошелек
                   </Button>
                 )}
               </div>
@@ -250,15 +293,30 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
               <p className="text-gray-600 mb-12 max-w-sm mx-auto">Войдите через Telegram, чтобы начать знакомства</p>
 
               <div className="space-y-4">
-                {/* Telegram Login Widget - Step 1 */}
-                <div className="flex justify-center">
-                  <TelegramLoginWidget
-                    botName="SomeDatingBot" // Replace with your actual bot name
-                    onAuth={handleTelegramAuth}
-                    onError={handleTelegramAuthError}
-                    buttonSize="large"
-                    cornerRadius={20}
-                  />
+                {/* Telegram Login Widget - Step 1 with better pulsing hint */}
+                <div className="relative flex justify-center">
+                  {/* Better pulsing animation that adapts to button size - only border */}
+                  <div className="absolute inset-0 flex justify-center items-center">
+                    <div className="absolute w-72 h-16 rounded-2xl border border-blue-400 animate-ping animation-delay-300"></div>
+                  </div>
+
+                  <div className="relative z-10" style={{ animation: "gentle-scale 2s ease-in-out infinite"}}>
+                    <TelegramLoginWidget
+                      botName="SomeDatingBot" // Replace with your actual bot name
+                      onAuth={handleTelegramAuth}
+                      onError={handleTelegramAuthError}
+                      buttonSize="large"
+                      cornerRadius={20}
+                    />
+                  </div>
+                </div>
+
+                {/* Step indicator with hint text */}
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-blue-600 font-medium">Шаг 1: Войдите через Telegram</span>
+                  </div>
                 </div>
 
                 {/* Development only - will be removed */}
@@ -279,14 +337,23 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
           <Button
             onClick={handleContinue}
             disabled={!locationGranted}
-            className={`w-full h-14 text-lg font-medium rounded-2xl transition-all duration-300 ${
+            className={`w-full h-14 text-lg font-medium rounded-2xl transition-all duration-500 ${
               locationGranted
-                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                ? "bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
+            style={
+              locationGranted
+                ? {
+                    animation: "gentle-scale 2s ease-in-out infinite",
+                  }
+                : {}
+            }
           >
             Продолжить
-            <ChevronRight className="ml-2 h-5 w-5" />
+            <ChevronRight
+              className={`ml-2 h-5 w-5 transition-all duration-300 ${locationGranted ? "transform translate-x-1" : ""}`}
+            />
           </Button>
         </div>
       )}
@@ -326,6 +393,20 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
           </div>
         </div>
       )}
+      <style jsx>{`
+        @keyframes gentle-scale {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.02);
+          }
+        }
+        
+        .animation-delay-300 {
+          animation-delay: 300ms;
+        }
+      `}</style>
     </div>
   )
 }

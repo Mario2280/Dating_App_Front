@@ -42,6 +42,7 @@
     "@stripe/stripe-js": "latest",
     "@telegram-apps/sdk-react": "^3.3.2",
     "@tonconnect/ui-react": "latest",
+    "@twa-dev/sdk": "^8.0.2",
     "autoprefixer": "^10.4.20",
     "axios": "latest",
     "class-variance-authority": "^0.7.1",

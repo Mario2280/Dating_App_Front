@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { MapPin, CheckCircle, AlertCircle, Settings } from "lucide-react"
 import { useLocation } from "@/contexts/location-context"
+import { useEffect } from "react"
 
 interface LocationManagerProps {
   onLocationGranted?: () => void
@@ -19,31 +20,30 @@ export default function LocationManager({
   visible = true, // Default to visible
   className = "",
 }: LocationManagerProps) {
-  const { \, location, isLoading, error, requestLocation, openLocationSettings, hasLocationPermission } =
+  const { isAvailable, location, isLoading, error, requestLocation, openLocationSettings, hasLocationPermission } =
     useLocation()
 
   const handleLocationRequest = async () => {
     if (!hasLocationPermission) {
-      // First open settings to let user grant permission
+      // Open settings to let user grant permission
       openLocationSettings()
-
-      // Wait a bit and then try to request location
-      setTimeout(async () => {
-        await requestLocation()
-
-        if (hasLocationPermission && onLocationGranted) {
-          onLocationGranted()
-        } else if (!hasLocationPermission && onLocationDenied) {
-          onLocationDenied()
-        }
-      }, 2000)
     } else {
+      // Permission already granted, just request location
       await requestLocation()
       if (onLocationGranted) {
         onLocationGranted()
       }
     }
   }
+
+  // Add this useEffect after the existing handleLocationRequest function
+  useEffect(() => {
+    if (hasLocationPermission && onLocationGranted) {
+      onLocationGranted()
+    } else if (!hasLocationPermission && onLocationDenied) {
+      //onLocationDenied()
+    }
+  }, [hasLocationPermission, onLocationGranted, onLocationDenied])
 
   // If not visible, render nothing but still initialize the hook
   if (!visible) {

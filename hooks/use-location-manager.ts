@@ -5,6 +5,18 @@ import { locationManager, init } from "@telegram-apps/sdk-react"
 import type { LocationData, ProfileData } from "@/lib/types"
 import { saveProfileData, getProfileData } from "@/lib/telegram-auth"
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        LocationManager?: {
+          isAccessGranted: boolean
+        }
+      }
+    }
+  }
+}
+
 interface UseLocationManagerReturn {
   isAvailable: boolean
   location: LocationData | null
@@ -24,10 +36,10 @@ export function useLocationManager(): UseLocationManagerReturn {
 
   // Initialize Telegram SDK
   useEffect(() => {
-    //init()
+    init()
   }, [])
 
-  // Mount location manager
+  // Mount location manager and check permission status
   useEffect(() => {
     const mountLocationManager = async () => {
       try {
@@ -35,6 +47,39 @@ export function useLocationManager(): UseLocationManagerReturn {
           await locationManager.mount()
           setLocationManagerAvailable(true)
           setError(null)
+
+          // Set initial permission state using direct Telegram WebApp API
+          const checkPermission = () => {
+            if (window.Telegram?.WebApp?.LocationManager) {
+              const isGranted = window.Telegram.WebApp.LocationManager.isAccessGranted
+              setHasLocationPermission(isGranted)
+              return isGranted
+            }
+            return false
+          }
+
+          // Initial check
+          checkPermission()
+
+          // Set up polling to check permission status periodically
+          const permissionCheckInterval = setInterval(() => {
+            checkPermission()
+          }, 1000) // Check every second
+
+          // Also check when the app becomes visible again
+          const handleVisibilityChange = () => {
+            if (!document.hidden) {
+              setTimeout(checkPermission, 500) // Small delay to ensure state is updated
+            }
+          }
+
+          document.addEventListener("visibilitychange", handleVisibilityChange)
+
+          // Cleanup function
+          return () => {
+            clearInterval(permissionCheckInterval)
+            document.removeEventListener("visibilitychange", handleVisibilityChange)
+          }
         } else {
           setError("Location manager не доступен в этой среде")
         }
@@ -46,7 +91,18 @@ export function useLocationManager(): UseLocationManagerReturn {
       }
     }
 
-    mountLocationManager()
+    const cleanup = mountLocationManager()
+
+    // Return cleanup function
+    return () => {
+      if (cleanup && typeof cleanup.then === "function") {
+        cleanup.then((cleanupFn) => {
+          if (typeof cleanupFn === "function") {
+            cleanupFn()
+          }
+        })
+      }
+    }
   }, [])
 
   const openLocationSettings = useCallback(() => {
@@ -58,9 +114,12 @@ export function useLocationManager(): UseLocationManagerReturn {
   }, [isAvailable])
 
   const requestLocation = useCallback(async () => {
-    let locationData = null;
     if (!isAvailable) {
       setError("Location manager не инициализирован")
+      return
+    }
+    if (!hasLocationPermission) {
+      setError("Доступ к геолокации не предоставлен")
       return
     }
 
@@ -68,9 +127,11 @@ export function useLocationManager(): UseLocationManagerReturn {
     setError(null)
 
     try {
+      let locationData = null
       if (locationManager.requestLocation.isAvailable()) {
         locationData = await locationManager.requestLocation()
       }
+
       if (locationData) {
         const formattedLocation: LocationData = {
           latitude: locationData.latitude,
@@ -79,7 +140,6 @@ export function useLocationManager(): UseLocationManagerReturn {
         }
 
         setLocation(formattedLocation)
-        setHasLocationPermission(true)
 
         // Save location to profile data
         const existingProfile = getProfileData()
@@ -94,35 +154,14 @@ export function useLocationManager(): UseLocationManagerReturn {
         console.log("Location received:", formattedLocation)
       } else {
         setError("Не удалось получить геолокацию")
-        setHasLocationPermission(false)
       }
     } catch (err) {
       console.error("Error requesting location:", err)
       setError("Ошибка при запросе геолокации")
-      setHasLocationPermission(false)
     } finally {
       setIsLoading(false)
     }
-  }, [isAvailable])
-
-  // Auto-request location when available (for existing users)
-  //useEffect(() => {
-  //  const autoRequestLocation = async () => {
-  //    if (isAvailable && !location && !isLoading) {
-  //      // Check if we already have location permission
-  //      try {
-  //        await requestLocation()
-  //      } catch (err) {
-  //        // If auto-request fails, user needs to manually grant permission
-  //        console.log("Auto location request failed, manual permission needed")
-  //      }
-  //    }
-  //  }
-
-  //  // Small delay to ensure everything is properly initialized
-  //  const timer = setTimeout(autoRequestLocation, 1000)
-  //  return () => clearTimeout(timer)
-  //}, [isAvailable, location, isLoading, requestLocation])
+  }, [isAvailable, hasLocationPermission])
 
   return {
     isAvailable,
