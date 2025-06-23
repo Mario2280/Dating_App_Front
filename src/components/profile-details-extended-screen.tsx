@@ -257,7 +257,7 @@ export default function ProfileDetailsExtendedScreen({
         <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
-        <button onClick={handleNext} className="text-blue-500 text-lg font-medium">
+        <button onClick={onNext} className="text-blue-500 text-lg font-medium">
           Пропустить
         </button>
       </div>

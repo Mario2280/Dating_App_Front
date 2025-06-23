@@ -16,9 +16,25 @@ export default defineConfig({
     allowedHosts: [
       "localhost",
       "127.0.0.1",
-      ".ngrok.io", // Если используете ngrok
-      ".tuna.am" // Все поддомены tuna.am
+      ".ngrok.io", 
+      ".tuna.am", 
+      ".me"
     ],
+    proxy: {
+      '/telegram-images': {
+        target: 'https://t.me',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/telegram-images/, ''),
+        secure: true 
+      },
+
+      // Для локального API (http://localhost:3001)
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   define: {
     global: "globalThis",

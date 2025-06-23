@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import AuthCheckScreen from "@/components/auth-check-screen"
 //import WelcomeScreen from "@/components/welcome-screen"
@@ -24,10 +26,10 @@ import ProfileDetailsExtendedScreen from "@/components/profile-details-extended-
 import type { TelegramUser, ProfileData } from "@/lib/types"
 import ProfileCompletionScreen from "@/components/profile-completion-screen"
 import ModerationPanelScreen from "@/components/moderator-panel-screen"
-import WelcomeScreenComp from "@/components/welcome-screen";
+import WelcomeScreenComp from "@/components/welcome-screen"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LocationProvider } from "@/contexts/location-context"
-
+import { CompleteProfileData } from './lib/auth.service'
 
 export type Screen =
   | "auth-check"
@@ -55,7 +57,7 @@ export type Screen =
   | "moderator-panel"
 
 export default function DatingApp() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("auth-check")
+  const [currentScreen, setCurrentScreen] = useState<Screen>(import.meta.env.VITE_NODE_ENV === "prod" ? "auth-check" : "welcome")
   const [instagramPhotoIndex, setInstagramPhotoIndex] = useState(0)
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null)
   const [currentUser, setCurrentUser] = useState<ProfileData | null>(null)
@@ -63,8 +65,6 @@ export default function DatingApp() {
 
   // Load profile data from localStorage on component mount
   useEffect(() => {
-    
-
     const savedProfile = getProfileData()
     if (savedProfile) {
       setCurrentUser(savedProfile)
@@ -74,7 +74,6 @@ export default function DatingApp() {
   const navigateToScreen = (screen: Screen) => {
     setCurrentScreen(screen)
   }
-
 
   const handleAuthenticated = (profile: ProfileData) => {
     setCurrentUser(profile)
@@ -102,7 +101,7 @@ export default function DatingApp() {
       telegram_id: telegramUser.id,
       name: `${telegramUser.first_name}${telegramUser.last_name ? ` ${telegramUser.last_name}` : ""}`,
       age: 18,
-      location: "",
+      location:  "",
     }
 
     setCurrentUser(profileData)
@@ -110,14 +109,14 @@ export default function DatingApp() {
     navigateToScreen("gender")
   }
 
-  const handleProfileUpdate = (updates: Partial<ProfileData>) => {
+  const handleProfileUpdate = (updates: Partial<CompleteProfileData>) => {
     if (currentUser) {
       const updatedProfile = { ...currentUser, ...updates }
       setCurrentUser(updatedProfile)
       saveProfileData(updatedProfile) // Save the complete profile, not just updates
       console.log("Profile updated and saved:", updatedProfile) // Debug log
     }
-    navigateToScreen("main")
+    // Don't navigate to main here - let each screen handle its own navigation
   }
 
   const handleProfileComplete = () => {
@@ -154,6 +153,7 @@ export default function DatingApp() {
           <WelcomeScreenComp
             onNext={() => navigateToScreen("gender")}
             onAuthenticated={handleTelegramAuth}
+            setCurrentUser={import.meta.env.VITE_NODE_ENV === "prod" ? undefined : setCurrentUser}
             authenticatedUser={authenticatedTelegramUser || undefined}
           />
         )
@@ -162,7 +162,10 @@ export default function DatingApp() {
           <GenderSelectionScreen
             onNext={() => navigateToScreen("profile-details")}
             onBack={() => navigateToScreen("welcome")}
-            onUpdate={handleProfileUpdate}
+            onUpdate={(updates) => {
+              handleProfileUpdate(updates)
+              // Don't auto-navigate here, let the component handle it
+            }}
             currentUser={currentUser}
           />
         )
@@ -201,13 +204,19 @@ export default function DatingApp() {
           />
         )
       case "notifications":
-        return <NotificationScreen onNext={handleProfileComplete} onBack={() => navigateToScreen("about-me")} />
+        return <NotificationScreen onNext={handleProfileComplete} onBack={() => navigateToScreen("about-me")} onUpdate={handleProfileUpdate} currentUser={currentUser} />
       case "main":
         return (
           <MainScreen onProfileClick={() => navigateToScreen("profile-view")} navigateToScreen={navigateToScreen} />
         )
       case "profile-view":
-        return <ProfileViewScreen onBack={() => navigateToScreen("main")} onPhotoClick={handleInstagramPhotoClick} navigateToScreen={navigateToScreen}/>
+        return (
+          <ProfileViewScreen
+            onBack={() => navigateToScreen("main")}
+            onPhotoClick={handleInstagramPhotoClick}
+            navigateToScreen={navigateToScreen}
+          />
+        )
       case "matches":
         return (
           <MatchesScreen
@@ -270,7 +279,7 @@ export default function DatingApp() {
       case "moderator-panel":
         return <ModerationPanelScreen onBack={() => navigateToScreen("main")} />
       default:
-        return <WelcomeScreenComp onNext={() => navigateToScreen("gender")} />
+        return <WelcomeScreenComp onNext={() => navigateToScreen("gender") } />
     }
   }
 

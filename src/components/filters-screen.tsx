@@ -147,6 +147,39 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
   const [selectedLastActive, setSelectedLastActive] = useState("")
   const [isVisible, setIsVisible] = useState(true)
 
+  const style = `
+        input[type="range"]::-webkit-slider-thumb {
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]:disabled::-webkit-slider-thumb {
+          background: #9ca3af;
+          cursor: not-allowed;
+        }
+
+        input[type="range"]:disabled::-moz-range-thumb {
+          background: #9ca3af;
+          cursor: not-allowed;
+        }
+      `
+
   const [dropdownStates, setDropdownStates] = useState({
     region: false,
     purpose: false,
@@ -282,6 +315,7 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <style>{style}</style>
       <div className="bg-white rounded-t-3xl p-6 min-h-screen">
         <div className="flex justify-center mb-6">
           <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
@@ -570,39 +604,6 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
         onConnectWallet={handleConnectWallet}
         navigateToScreen={navigateToScreen}
       />
-
-      <style jsx>{`
-        input[type="range"]::-webkit-slider-thumb {
-          appearance: none;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        input[type="range"]:disabled::-webkit-slider-thumb {
-          background: #9ca3af;
-          cursor: not-allowed;
-        }
-
-        input[type="range"]:disabled::-moz-range-thumb {
-          background: #9ca3af;
-          cursor: not-allowed;
-        }
-      `}</style>
     </div>
   )
 }

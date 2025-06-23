@@ -57,7 +57,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
   const [firstName, setFirstName] = useState(currentUser?.name?.split(" ")[0] || telegramUser?.first_name || "")
   const [lastName, setLastName] = useState(currentUser?.name?.split(" ")[1] || telegramUser?.last_name || "")
   const [profileImage, setProfileImage] = useState<string>("")
-  const [birthDate, setBirthDate] = useState("11 июля 2005")
+  const [birthDate, setBirthDate] = useState("")
   const [age, setAge] = useState(currentUser?.age || 19)
   const [location, setLocation] = useState(currentUser?.location || "Минск, Беларусь")
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -138,7 +138,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
         <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
-        <button onClick={handleNext} className="text-blue-500 text-lg font-medium">
+        <button onClick={onNext} className="text-blue-500 text-lg font-medium">
           Пропустить
         </button>
       </div>

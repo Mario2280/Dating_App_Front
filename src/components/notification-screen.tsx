@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { getProfileData, saveProfileData } from "@/lib/telegram-auth"
 import AuthService, { type CompleteProfileData } from "@/lib/auth.service"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface NotificationScreenProps {
   onNext: () => void
-  onBack: () => void
+  onUpdate: (updates: Partial<CompleteProfileData>) => void
+  onBack: () => void,
+  currentUser: CompleteProfileData
 }
 
-export default function NotificationScreen({ onNext, onBack }: NotificationScreenProps) {
+export default function NotificationScreen({ onNext, onBack, onUpdate, currentUser }: NotificationScreenProps) {
   const [notificationSettings, setNotificationSettings] = useState({
     matches: true,
     messages: true,
@@ -20,6 +22,13 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
     promotions: true,
     updates: true,
   })
+
+  useEffect(() => {
+      if (currentUser?.notification_settings) {
+        setNotificationSettings(currentUser.notification_settings)
+        console.log("Loaded notification_settings from currentUser:", currentUser.notification_settings) // Debug log
+      }
+    }, [currentUser])
 
   const handleEnableNotifications = async () => {
     try {
@@ -32,17 +41,12 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
         (notificationSettings.promotions ? 16 : 0) |
         (notificationSettings.updates ? 32 : 0)
 
-      const currentProfile = getProfileData()
-      if (!currentProfile) {
-        console.error("No profile data found")
-        onNext()
-        return
-      }
+      const currentProfile = currentUser
 
       const completeProfileData: CompleteProfileData = {
         ...currentProfile,
         notification_settings: settingsBitmask,
-        wallets: currentProfile.wallets || [],
+        wallets: currentProfile?.wallets || [],
       }
 
       // Create profile on backend
@@ -64,10 +68,20 @@ export default function NotificationScreen({ onNext, onBack }: NotificationScree
     }
   }
 
+  const handleBack = () => {
+    onUpdate({ notification_settings: {...notificationSettings} })
+    onBack()
+  }
+
+  const handleCreateUser = () => {
+    onUpdate({ notification_settings: {...notificationSettings} })
+    onBack()
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <div className="flex justify-between items-center p-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
         <button onClick={onNext} className="text-blue-500 text-lg font-medium">

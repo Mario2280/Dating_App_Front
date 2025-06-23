@@ -29,6 +29,7 @@ export default function GenderSelectionScreen({ onNext, onBack, onUpdate, curren
   }
 
   const handleBack = () => {
+    if(import.meta.env.VITE_NODE_ENV === "dev") return
     onUpdate({ gender: selectedGender })
     onBack()
   }
@@ -39,7 +40,7 @@ export default function GenderSelectionScreen({ onNext, onBack, onUpdate, curren
         <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
-        <button onClick={handleNext} className="text-blue-500 text-lg font-medium">
+        <button onClick={onNext} className="text-blue-500 text-lg font-medium">
           Пропустить
         </button>
       </div>

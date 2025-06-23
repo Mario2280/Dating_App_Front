@@ -8,15 +8,16 @@ import WalletConnectionModal from "./wallet-connection-modal"
 import LocationManager from "./location-manager"
 import { saveTelegramUser, saveProfileData, getTelegramUser } from "@/lib/telegram-auth"
 import type { TelegramUser, WalletInfo } from "@/lib/types"
-import { Img as Image } from 'react-image';
+import { Img as Image } from "react-image"
 import WalletConnectionStub from "./wallet-connection-stub"
+import type { ProfileData } from "@/lib/types"
 interface WelcomeScreenProps {
   onNext: () => void
   onAuthenticated?: (telegramUser: TelegramUser) => void
+  setCurrentUser?: (profile: ProfileData) => void
   authenticatedUser?: TelegramUser // For users who are already authenticated
+
 }
-
-
 
 const styles = `
   @keyframes gentle-scale {
@@ -33,7 +34,7 @@ const styles = `
   }
 `
 
-export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUser }: WelcomeScreenProps) {
+export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUser, setCurrentUser }: WelcomeScreenProps) {
   const [showTerms, setShowTerms] = useState(false)
   const [showWalletModal, setShowWalletModal] = useState(false)
   const [walletConnected, setWalletConnected] = useState(false)
@@ -44,8 +45,6 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
   const [showLocationStep, setShowLocationStep] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
- 
-  
   // Check for existing user on mount
   useEffect(() => {
     const checkExistingUser = () => {
@@ -315,7 +314,7 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                     <div className="absolute w-72 h-16 rounded-2xl border border-blue-400 animate-ping animation-delay-300"></div>
                   </div>
 
-                  <div className="relative z-10" style={{ animation: "gentle-scale 2s ease-in-out infinite"}}>
+                  <div className="relative z-10" style={{ animation: "gentle-scale 2s ease-in-out infinite" }}>
                     <TelegramLoginWidget
                       botName="SomeDatingBot" // Replace with your actual bot name
                       onAuth={handleTelegramAuth}
@@ -335,8 +334,48 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                 </div>
 
                 {/* Development only - will be removed */}
-                {import.meta.env.VITE_NODE_ENV === "dev" && (
-                  <button onClick={onNext} className="w-full text-gray-400 text-sm font-medium opacity-50">
+                {import.meta.env.VITE_NODE_ENV === "dev" && setCurrentUser &&(
+                  <button
+                    onClick={() => {
+                      // Create fake Telegram user for development
+                      const fakeTelegramUser: TelegramUser = {
+                        id: 1056503469,
+                        first_name: "David",
+                        username: "dag2134",
+                        photo_url: "https://t.me/i/userpic/320/yzIgTBtcW4J5J0x24SrKrWv9eJvtkVfoJvQ7N02Bfhs.jpg",
+                        auth_date: Math.floor(Date.now() / 1000),
+                        hash: "dev_hash",
+                      }
+
+                      // Save fake user data
+                      saveTelegramUser(fakeTelegramUser)
+                      setTelegramUser(fakeTelegramUser)
+
+                      // Create initial profile with fake location
+                      const profileData: ProfileData = {
+                        telegram_id: fakeTelegramUser.id,
+                        name: fakeTelegramUser.first_name,
+                        age: 18,
+                        location: "55.7558,37.6176", // Moscow coordinates for dev
+                      }
+
+                      saveProfileData(profileData)
+                      setCurrentUser(profileData)
+
+                      // Set location as granted for dev
+                      setLocationGranted(true)
+                      setShowLocationStep(true)
+
+                      // Auto-continue after a short delay to show the flow
+                      setTimeout(() => {
+                        if (onAuthenticated) {
+                          onAuthenticated(fakeTelegramUser)
+                        }
+                        onNext()
+                      }, 1000)
+                    }}
+                    className="w-full text-gray-400 text-sm font-medium opacity-50 hover:opacity-75 transition-opacity"
+                  >
                     [DEV] Продолжить без входа
                   </button>
                 )}
@@ -345,7 +384,7 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
           </>
         )}
       </div>
-
+      
       {/* Continue Button - Only show when location is granted */}
       {telegramUser && showLocationStep && (
         <div className="px-6 pb-8">
