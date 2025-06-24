@@ -10,7 +10,7 @@ import { Img as Image } from 'react-image';
 import { motion } from "framer-motion"
 import ComplaintModal, { type ComplaintReason } from "./complaint-modal"
 import ChatProfileView from "./chat-profile-view"
-
+import { getChatsData } from "@/lib/telegram-auth"
 interface ChatScreenProps {
   onBack: () => void
 }
@@ -32,35 +32,87 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [startY, setStartY] = useState(0)
   const [dragY, setDragY] = useState(0)
-  const [chatMessages, setChatMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Привет, Кирилл! Видела в приложении, что мы уже несколько раз пересекались 😊",
-      time: "2:55",
-      sender: "anna",
-    },
-    {
-      id: 2,
-      text: "Ахах, приятно познакомиться, Анна! Может, выпьем кофе сегодня вечером? ☕",
-      time: "3:02",
-      sender: "me",
-      status: "read",
-    },
-    {
-      id: 3,
-      text: "Давай! 😊",
-      time: "3:10",
-      sender: "anna",
-    },
-    {
-      id: 4,
-      text: "Чуть позже напишу. До скорого!",
-      time: "3:12",
-      sender: "me",
-      status: "read",
-    },
-  ])
+  const [chatMessages, setChatMessages] = useState<Message[]>([])
+  const [chatData, setChatData] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load chat data from backend
+  useEffect(() => {
+    const loadChatData = () => {
+      const chatsData = getChatsData()
+      if (chatsData && chatsData.length > 0) {
+        // For demo, use first chat
+        const currentChat = chatsData[0]
+        setChatData(currentChat)
+
+        // Load messages if available
+        if (currentChat.messages) {
+          setChatMessages(currentChat.messages)
+        } else {
+          // Fallback to demo messages
+          setChatMessages([
+            {
+              id: 1,
+              text: "Привет, Давид! Видела в приложении, что мы уже несколько раз пересекались 😊",
+              time: "2:55",
+              sender: "anna",
+            },
+            {
+              id: 2,
+              text: "Ахах, приятно познакомиться, Анна! Может, выпьем кофе сегодня вечером? ☕",
+              time: "3:02",
+              sender: "me",
+              status: "read",
+            },
+            {
+              id: 3,
+              text: "Давай! 😊",
+              time: "3:10",
+              sender: "anna",
+            },
+            {
+              id: 4,
+              text: "Чуть позже напишу. До скорого!",
+              time: "3:12",
+              sender: "me",
+              status: "read",
+            },
+          ])
+        }
+      } else {
+        // Fallback to demo data
+        setChatMessages([
+        {
+          id: 1,
+          text: "Привет, Давид! Видела в приложении, что мы уже несколько раз пересекались 😊",
+          time: "2:55",
+          sender: "anna",
+        },
+        {
+          id: 2,
+          text: "Ахах, приятно познакомиться, Анна! Может, выпьем кофе сегодня вечером? ☕",
+          time: "3:02",
+          sender: "me",
+          status: "read",
+        },
+        {
+          id: 3,
+          text: "Давай! 😊",
+          time: "3:10",
+          sender: "anna",
+        },
+        {
+          id: 4,
+          text: "Чуть позже напишу. До скорого!",
+          time: "3:12",
+          sender: "me",
+          status: "read",
+        },
+      ])
+      }
+    }
+    loadChatData()
+}, [])
 
   // Simulate message read status updates
   useEffect(() => {
@@ -171,8 +223,8 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
         <div className="flex items-center gap-3 flex-1" onClick={() => setShowProfile(true)}>
           <div className="relative cursor-pointer">
             <Image
-              src="/placeholder.svg?height=40&width=40"
-              alt="Anna"
+              src={chatData?.avatar || "/placeholder.svg?height=40&width=40"}
+              alt={chatData?.name || "Anna"}
               className="rounded-full object-cover w-10 h-10"
             />
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -181,8 +233,8 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           </div>
 
           <div className="cursor-pointer">
-            <h2 className="font-semibold text-lg">Анна</h2>
-            <p className="text-blue-500 text-sm">● У вас мэтч</p>
+          <h2 className="font-semibold text-lg dark:text-white">{chatData?.name || "Анна"}</h2>
+          <p className="text-blue-500 text-sm">● У вас мэтч</p>
           </div>
         </div>
 

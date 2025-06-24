@@ -2,11 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, Crown } from "lucide-react"
 import PremiumPopup from "./premium-popup"
 import type { Screen } from "@/App"
+import { saveSearchFilters, getSearchFilters } from "@/lib/telegram-auth"
 interface FiltersScreenProps {
   onBack: () => void
   navigateToScreen: (screen: Screen) => void
@@ -147,6 +148,31 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
   const [selectedLastActive, setSelectedLastActive] = useState("")
   const [isVisible, setIsVisible] = useState(true)
 
+  // Load saved filters on component mount
+  useEffect(() => {
+    const savedFilters = getSearchFilters()
+    if (savedFilters) {
+      setSelectedGender(savedFilters.selectedGender || "FEMALE")
+      setDistance(savedFilters.distance || 40)
+      setAgeRange(savedFilters.ageRange || [18, 24])
+      setHeightRange(savedFilters.heightRange || [150, 180])
+      setSelectedRegion(savedFilters.selectedRegion || "Минск, Беларусь")
+      setSelectedPurpose(savedFilters.selectedPurpose || "")
+      setSelectedEducation(savedFilters.selectedEducation || "")
+      setSelectedBuild(savedFilters.selectedBuild || "")
+      setSelectedOrientation(savedFilters.selectedOrientation || "")
+      setSelectedAlcohol(savedFilters.selectedAlcohol || "")
+      setSelectedSmoking(savedFilters.selectedSmoking || "")
+      setSelectedKids(savedFilters.selectedKids || "")
+      setWeightRange(savedFilters.weightRange || [50, 80])
+      setSelectedLanguage(savedFilters.selectedLanguage || "")
+      setSelectedLivingCondition(savedFilters.selectedLivingCondition || "")
+      setSelectedIncome(savedFilters.selectedIncome || "")
+      setSelectedLastActive(savedFilters.selectedLastActive || "")
+      setIsVisible(savedFilters.isVisible !== undefined ? savedFilters.isVisible : true)
+    }
+  }, [])
+
   const style = `
         input[type="range"]::-webkit-slider-thumb {
           appearance: none;
@@ -256,6 +282,34 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
     setShowPremiumPopup(false)
   }
 
+  const handleApplyFilters = () => {
+    // Save filters before applying
+    const filtersToSave = {
+      selectedGender,
+      distance,
+      ageRange,
+      heightRange,
+      selectedRegion,
+      selectedPurpose,
+      selectedEducation,
+      selectedBuild,
+      selectedOrientation,
+      selectedAlcohol,
+      selectedSmoking,
+      selectedKids,
+      weightRange,
+      selectedLanguage,
+      selectedLivingCondition,
+      selectedIncome,
+      selectedLastActive,
+      isVisible,
+    }
+
+    saveSearchFilters(filtersToSave)
+    console.log("Filters saved:", filtersToSave)
+
+    onBack()
+  }
   const renderDropdown = <T extends string>(
     label: string,
     value: T,
@@ -584,7 +638,7 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
 
           <div className="fixed bottom-8 left-6 right-6">
             <Button
-              onClick={onBack}
+              onClick={handleApplyFilters}
               className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
             >
               Применить фильтры

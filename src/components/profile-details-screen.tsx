@@ -51,6 +51,38 @@ const downloadImageAsBase64 = async (url: string): Promise<string> => {
   }
 }
 
+// Helper function to calculate age from birth date
+export const calculateAgeFromDate = (dateString: string): number => {
+  const parts = dateString.split(" ")
+  if (parts.length !== 3) return 18
+
+  const months = {
+    "январь": 0, "февраль": 1, "март": 2, "апрель": 3, "май": 4, "июнь": 5,
+    "июль": 6, "август": 7, "сентябрь": 8, "октябрь": 9, "ноябрь": 10, "декабрь": 11
+  }
+
+  const day = parseInt(parts[0])
+  const month = months[parts[1].toLowerCase() as keyof typeof months]
+  const year = parseInt(parts[2])
+
+  if (isNaN(day) || month === undefined || isNaN(year)) return 18
+
+  const birthDate = new Date(year, month, day)
+  const today = new Date()
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  console.log(age);
+  return Math.max(age, 18) // Minimum age 18
+}
+  
+  
+  
+
+
 export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, currentUser }: ProfileDetailsScreenProps) {
   const telegramUser = getTelegramUser()
 
@@ -64,6 +96,9 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+
+
+  
   // Initialize profile image from Telegram or saved data
   useEffect(() => {
     const initializeProfileImage = async () => {
@@ -99,14 +134,18 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
   }
 
   const handleDateSelect = (date: string) => {
+    
+    
     setBirthDate(date)
-    // Calculate age from birth date
-    const parts = date.split(" ")
-    if (parts.length === 3) {
-      const year = Number.parseInt(parts[2])
-      const currentYear = new Date().getFullYear()
-      setAge(currentYear - year)
-    }
+    // Calculate and update age from birth date
+    const calculatedAge = calculateAgeFromDate(date)
+    setAge(calculatedAge)
+  }
+
+  const handleAgeChange = (newAge: number) => {
+    setAge(newAge)
+    // Clear birth date when age is manually changed
+    setBirthDate("")
   }
 
   const handleNext = () => {
@@ -193,8 +232,8 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
             <Input
               type="number"
               value={age}
-              onChange={(e) => setAge(Number(e.target.value))}
-              className="h-14 text-lg border-gray-200 rounded-2xl"
+              onChange={(e) => handleAgeChange(Number(e.target.value))}
+              className="h-14 text-lg border-gray-200 dark:border-gray-700 rounded-2xl dark:bg-gray-800 dark:text-white"
             />
           </div>
 

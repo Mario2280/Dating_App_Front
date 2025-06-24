@@ -6,6 +6,8 @@ import type { TelegramUser, ProfileData } from "./types"
 export interface AuthResponse {
   isValid: boolean
   profile?: ProfileData
+  chats?: any[]
+  likes?: any[]
 }
 
 export interface CompleteProfileData extends ProfileData {
@@ -17,12 +19,10 @@ export interface CompleteProfileData extends ProfileData {
     promotions: boolean
     updates: boolean
   } | number
-  //wallets?: Array<{
-  //  type: "ton" | "stripe"
-  //  address?: string
-  //  chain?: string
-  //  metadata?: any
-  //}>
+  chat_id?: number
+  photos?: string[]
+  chats?: any[]
+  likes?: any[]
 }
 
 const AuthService = {
@@ -60,25 +60,16 @@ const AuthService = {
     }
   },
 
-  //async createProfile(profileData: ProfileData): Promise<ProfileData> {
-  //  try {
-  //    return instance({
-  //      url: `${UrlConfig.PROFILE}/create`,
-  //      method: HttpMethod.POST,
-  //      data: profileData,
-  //    }).then((response) => response.data)
-  //  } catch (error) {
-  //    console.error("Profile creation failed:", error)
-  //    throw error
-  //  }
-  //},
-
-  async updateProfile(profileData: Partial<ProfileData>): Promise<ProfileData> {
+  async updateProfile(profileData: Partial<ProfileData>, photosToDelete?: number[]): Promise<ProfileData> {
     try {
+      const updateData = {
+        ...profileData,
+        photos_to_delete: photosToDelete || [],
+      }
       return instance({
         url: `${UrlConfig.PROFILE}/update`,
         method: HttpMethod.PUT,
-        data: profileData,
+        data: updateData,
       }).then((response) => response.data)
     } catch (error) {
       console.error("Profile update failed:", error)

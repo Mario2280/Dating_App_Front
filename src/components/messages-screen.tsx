@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import BottomNavigation from "./bottom-navigation"
 import ChatScreen from "./chat-screen"
 import type { Screen } from "@/App"
 import { Img as Image } from 'react-image';
+import { getChatsData } from "@/lib/telegram-auth"
 interface MessagesScreenProps {
   onBack: () => void
   onChatClick: (conversationId: number) => void
@@ -23,39 +24,62 @@ interface Conversation {
 }
 
 export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }: MessagesScreenProps) {
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: 1,
-      name: "Анна",
-      lastMessage: "Стикер 😍",
-      time: "23 мин",
-      unread: 1,
-      avatar: "/placeholder.svg?height=60&width=60",
-      hasRead: false,
-    },
-    {
-      id: 2,
-      name: "Валерия",
-      lastMessage: "Привет!",
-      time: "27 мин",
-      unread: 2,
-      avatar: "/placeholder.svg?height=60&width=60",
-      hasRead: false,
-    },
-    {
-      id: 3,
-      name: "Лиза",
-      lastMessage: "Ок, увидимся.",
-      time: "1 час",
-      unread: 0,
-      avatar: "/placeholder.svg?height=60&width=60",
-      hasRead: true,
-    },
-  ])
-
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [showChat, setShowChat] = useState(false)
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null)
 
+  // Load conversations from backend
+  useEffect(() => {
+    const loadConversations = () => {
+      const chatsData = getChatsData()
+      if (chatsData && chatsData.length > 0) {
+        // Convert backend chat data to conversation format
+        const backendConversations = chatsData.map((chat: any, index: number) => ({
+          id: chat.id || index + 1,
+          name: chat.name || `Пользователь ${index + 1}`,
+          lastMessage: chat.lastMessage || "Новое сообщение",
+          time: chat.time || "сейчас",
+          unread: chat.unread || 0,
+          avatar: chat.avatar || "/placeholder.svg?height=60&width=60",
+          hasRead: chat.hasRead !== undefined ? chat.hasRead : true,
+        }))
+        setConversations(backendConversations)
+      } else {
+        // Fallback to demo data
+        setConversations([
+        {
+          id: 1,
+          name: "Анна",
+          lastMessage: "Стикер 😍",
+          time: "23 мин",
+          unread: 1,
+          avatar: "/placeholder.svg?height=60&width=60",
+          hasRead: false,
+        },
+        {
+          id: 2,
+          name: "Валерия",
+          lastMessage: "Привет!",
+          time: "27 мин",
+          unread: 2,
+          avatar: "/placeholder.svg?height=60&width=60",
+          hasRead: false,
+        },
+        {
+          id: 3,
+          name: "Лиза",
+          lastMessage: "Ок, увидимся.",
+          time: "1 час",
+          unread: 0,
+          avatar: "/placeholder.svg?height=60&width=60",
+          hasRead: true,
+        },
+      ])
+      }
+    }
+
+    loadConversations()
+  }, [])
   const handleChatClick = (conversationId: number) => {
     // Mark conversation as read when clicked
     setConversations((prev) =>

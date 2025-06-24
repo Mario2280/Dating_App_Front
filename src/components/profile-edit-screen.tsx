@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronLeft, Camera, Plus, ChevronDown, Check, Calendar, Wallet, Crown } from "lucide-react"
+import { ChevronLeft, Camera, Plus, ChevronDown, Check, Calendar, Wallet, Crown, User, X } from "lucide-react"
 import BottomNavigation from "./bottom-navigation"
 import ScrollingDatePickerModal from "./scrolling-date-picker"
 import InstagramOAuthConnector from "./instagram-oauth-connector"
@@ -15,6 +15,9 @@ import WalletConnectionModal from "./wallet-connection-modal"
 import PremiumPopup from "./premium-popup"
 import { Img as Image } from 'react-image';
 import type { Screen } from "@/App"
+import { calculateAgeFromDate } from './profile-details-screen'
+import AuthService, { type CompleteProfileData } from "@/lib/auth.service"
+import { getProfileData, saveProfileData } from "@/lib/telegram-auth"
 interface ProfileEditScreenProps {
   onBack: () => void
   onSave: () => void
@@ -130,15 +133,17 @@ const interests = [
   { id: "games", label: "Видеоигры" },
 ]
 
+
 export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: ProfileEditScreenProps) {
+  const [currentProfile, setCurrentProfile] = useState<Partial<CompleteProfileData> | null>(null)
+  const [photosToDelete, setPhotosToDelete] = useState<number[]>([])
   const [firstName, setFirstName] = useState("Анна")
   const [profileImage, setProfileImage] = useState("/placeholder.svg?height=128&width=128")
-  const [photos, setPhotos] = useState<(string | null)[]>(["/placeholder.svg?height=200&width=200", null, null])
-
+  const [photos, setPhotos] = useState<(string | null)[]>([])
+  const [birthDate, setBirthDate] = useState("")
   // Basic info
   const [age, setAge] = useState(19)
   const [selectedGender, setSelectedGender] = useState<keyof typeof genderOptions | "">("")
-  const [birthDate, setBirthDate] = useState("11 июля 2005")
   const [location, setLocation] = useState("Минск, Беларусь")
 
   // Profile details
@@ -193,6 +198,10 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
   const [walletConnected, setWalletConnected] = useState(false)
   const [showWalletModal, setShowWalletModal] = useState(false)
   // Dropdown states
+
+  // Photo selection modal
+  const [showPhotoSelector, setShowPhotoSelector] = useState(false)
+  const [selectedMainPhotoIndex, setSelectedMainPhotoIndex] = useState(0)
   const [dropdownStates, setDropdownStates] = useState({
     gender: false,
     purpose: false,
@@ -207,7 +216,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     income: false,
   })
   const [showDatePicker, setShowDatePicker] = useState(false)
-
+  const [isSaving, setIsSaving] = useState(false)
   const profileImageRef = useRef<HTMLInputElement>(null)
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -231,12 +240,47 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
 
   // Add useEffect to load user profile data
   useEffect(() => {
-    // This should load actual user data - for now using placeholder logic
-    // In a real app, you'd fetch this from your user context or API
     const loadUserData = () => {
-      // Only set values if they exist in user data
-      // These would come from your actual user data source
-      // For now, keeping the existing demo data as fallbacks only if no real data exists
+      const profile = getProfileData() as CompleteProfileData
+      if (profile) {
+        setCurrentProfile(profile)
+
+        // Load basic info
+        setFirstName(profile.name?.split(" ")[0] || "")
+        setAge(profile.age || 18)
+        setSelectedGender(profile.gender || "")
+        setLocation((profile.location as string) || "")
+
+        // Load profile photo
+        if (profile.profile_photo) {
+          setProfileImage(profile.profile_photo)
+        }
+
+        // Load gallery photos
+        if (profile.photos && profile.photos.length > 0) {
+          setPhotos(profile.photos)
+        }
+
+        // Load other profile details
+        setSelectedPurpose(profile.purpose || "")
+        setSelectedEducation(profile.education || "")
+        setWeight(profile.weight || 55)
+        setHeight(profile.height || 165)
+        setSelectedBuild(profile.build || "")
+        setSelectedLanguage(profile.language || "")
+        setSelectedOrientation(profile.orientation || "")
+        setSelectedAlcohol(profile.alcohol || "")
+        setSelectedSmoking(profile.smoking || "")
+        setSelectedKids(profile.kids || "")
+        setSelectedLivingCondition(profile.living_condition || "")
+        setSelectedIncome(profile.income || "")
+        setBio(profile.bio || "")
+
+        // Load notification settings
+        if (typeof profile.notification_settings === "object") {
+          setNotificationSettings(profile.notification_settings)
+        }
+      }
     }
 
     loadUserData()
@@ -273,6 +317,18 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     }
   }
 
+  const handleDeletePhoto = (index: number) => {
+    const newPhotos = [...photos]
+
+    // If this is a backend photo (has an ID), add to delete list
+    if (currentProfile?.photos && currentProfile.photos[index]) {
+      // Assuming photos have IDs - you might need to adjust this based on your backend structure
+      setPhotosToDelete((prev) => [...prev, index]) // You'll need to store photo IDs properly
+    }
+    newPhotos.splice(index, 1)
+    setPhotos(newPhotos)
+  }
+
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) => ({
       ...prev,
@@ -282,7 +338,17 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
 
   const handleDateSelect = (date: string) => {
     setBirthDate(date)
+    // Calculate and update age from birth date
+    const calculatedAge = calculateAgeFromDate(date)
+    setAge(calculatedAge)
   }
+
+  const handleAgeChange = (newAge: number) => {
+    setAge(newAge)
+    // Clear birth date when age is manually changed
+    setBirthDate("")
+  }
+  
 
   const toggleNotification = (setting: keyof typeof notificationSettings) => {
     setNotificationSettings((prev) => ({
@@ -307,6 +373,65 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     handlePremiumFeature(() => {
       setProfileVisible(!profileVisible)
     })
+  }
+  const handleSave = async () => {
+    setIsSaving(true)
+    const profileData: Partial<CompleteProfileData> = {
+      name: firstName,
+      age,
+      gender: selectedGender || undefined,
+      location,
+      profile_photo: profileImage !== "/placeholder.svg?height=128&width=128" ? profileImage : undefined,
+      photos: photos.filter((photo) => photo !== null) as string[],
+      purpose: selectedPurpose || undefined,
+      education: selectedEducation || undefined,
+      weight,
+      height,
+      build: selectedBuild || undefined,
+      language: selectedLanguage || undefined,
+      orientation: selectedOrientation || undefined,
+      alcohol: selectedAlcohol || undefined,
+      smoking: selectedSmoking || undefined,
+      kids: selectedKids || undefined,
+      living_condition: selectedLivingCondition || undefined,
+      income: selectedIncome || undefined,
+      bio,
+      interests: Object.keys(selectedInterests).filter(
+        (key) => selectedInterests[key as keyof typeof selectedInterests],
+      ),
+      notification_settings: notificationSettings,
+    }
+    try {
+      
+
+      console.log("Saving profile data:", profileData)
+      console.log("Photos to delete:", photosToDelete)
+
+      const updatedProfile = await AuthService.updateProfile(profileData, photosToDelete)
+
+      // Update local storage
+      saveProfileData(updatedProfile)
+      setCurrentProfile(updatedProfile)
+
+      console.log("Profile updated successfully:", updatedProfile)
+      onSave()
+    } catch (error) {
+      saveProfileData(profileData)
+      setCurrentProfile(profileData)
+      //console.error("Failed to save profile:", error)
+      //alert("Не удалось сохранить профиль. Попробуйте еще раз.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleMainPhotoSelect = (photoIndex: number) => {
+    setSelectedMainPhotoIndex(photoIndex)
+    // Set the selected photo as the main profile photo
+    if (photos[photoIndex]) {
+      setProfileImage(photos[photoIndex] as string)
+    }
+    setShowPhotoSelector(false)
   }
 
   const renderDropdown = <T extends string>(
@@ -366,9 +491,13 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         <Button variant="ghost" size="icon" onClick={onBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
-        <h1 className="text-xl font-semibold">Редактировать профиль</h1>
-        <Button onClick={onSave} className="text-blue-500 bg-transparent hover:bg-blue-50">
-          Сохранить
+        <h1 className="text-xl font-semibold dark:text-white">Редактировать профиль</h1>
+        <Button
+          onClick={handleSave}
+          className="text-blue-500 bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20"
+          disabled={isSaving}
+        >
+          {isSaving ? "Сохранение..." : "Сохранить"}
         </Button>
       </div>
 
@@ -384,7 +513,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
               />
             </div>
             <button
-              onClick={() => profileImageRef.current?.click()}
+              onClick={() => setShowPhotoSelector(true)}
               className="absolute -bottom-2 -right-2 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center"
             >
               <Camera className="h-6 w-6 text-white" />
@@ -417,7 +546,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
             <Input
               type="number"
               value={age}
-              onChange={(e) => setAge(Number(e.target.value))}
+              onChange={(e) => handleAgeChange(Number(e.target.value))}
               className="h-12 text-lg border-gray-200 rounded-xl"
             />
           </div>
@@ -445,14 +574,26 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
           </div>
         </div>
 
-        {/* Photos */}
+        {/*Photos
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Фотографии</h2>
           <div className="grid grid-cols-3 gap-3">
             {photos.map((photo, index) => (
               <div key={index} className="aspect-square rounded-xl overflow-hidden relative">
                 {photo ? (
-                  <Image src={photo || "/placeholder.svg"} alt={`Photo ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" />
+                  <>
+                  <Image
+                    src={photo || "/placeholder.svg"}
+                    alt={`Photo ${index + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => handleDeletePhoto(index)}
+                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
+                  >
+                    <X className="h-4 w-4 text-white" />
+                  </button>
+                </>
                 ) : (
                   <button
                     onClick={() => fileInputRefs.current[index]?.click()}
@@ -468,6 +609,45 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
                   onChange={(e) => handleImageUpload(index, e)}
                   className="hidden"
                 />
+              </div>
+            ))}
+          </div>
+        </div>*/}
+
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Фотографии</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {/* Кнопка добавления всегда первая */}
+            <div className="aspect-square rounded-xl overflow-hidden relative">
+              <button
+                onClick={() => fileInputRefs.current[photos.length]?.click()}
+                className="w-full h-full border-2 border-dashed border-blue-300 flex items-center justify-center rounded-xl"
+              >
+                <Plus className="h-6 w-6 text-blue-500" />
+              </button>
+              <input
+                ref={(el) => (fileInputRefs.current[photos.length] = el)}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(photos.length, e)}
+                className="hidden"
+              />
+            </div>
+
+            {/* Добавленные фотографии */}
+            {photos.map((photo, index) => (
+              <div key={index} className="aspect-square rounded-xl overflow-hidden relative">
+                <Image
+                  src={photo || "/placeholder.svg"}
+                  alt={`Photo ${index + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <button
+                  onClick={() => handleDeletePhoto(index)}
+                  className="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <X className="h-4 w-4 text-white" />
+                </button>
               </div>
             ))}
           </div>
@@ -768,15 +948,29 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
                 />
               </button>
             </div>
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              {currentProfile?.chat_id ? (
+                <button
+                  onClick={() => {
+                    // Disable notifications logic here
+                    console.log("Disabling notifications for chat_id:", currentProfile.chat_id)
+                  }}
+                  className="w-full text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center hover:text-red-500 transition-colors p-3 bg-red-50 dark:bg-red-900/20 rounded-xl"
+                >
+                  Отключить уведомления
+                </button>
+              ) : (
               <button
                 onClick={() => window.open("https://t.me/SomeDatingBot?start=notify", "_blank")}
                 className="w-full text-lg font-semibold text-gray-900 mb-2 text-center hover:text-blue-500 transition-colors p-3 bg-blue-50 rounded-xl"
               >
                 Открыть чат с ботом
               </button>
-              <p className="text-sm text-gray-500 text-center">
-                Отправьте боту команду /notify, чтобы получать уведомления в Telegram
+              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                {currentProfile?.chat_id
+                  ? "Уведомления настроены. Нажмите, чтобы отключить."
+                  : "Отправьте боту команду /notify, чтобы получать уведомления в Telegram"}
               </p>
             </div>
           </div>
@@ -825,7 +1019,44 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         onSelect={handleDateSelect}
         initialDate={birthDate}
       />
-
+{/* Photo Selector Modal */}
+  {showPhotoSelector && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold dark:text-white">Выберите главное фото</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowPhotoSelector(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {photos.map(
+                (photo, index) =>
+                  photo && (
+                    <button
+                      key={index}
+                      onClick={() => handleMainPhotoSelect(index)}
+                      className={`aspect-square rounded-xl overflow-hidden relative border-2 ${
+                        selectedMainPhotoIndex === index ? "border-blue-500" : "border-transparent"
+                      }`}
+                    >
+                      <Image
+                        src={photo || "/placeholder.svg"}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedMainPhotoIndex === index && (
+                        <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                          <Check className="h-6 w-6 text-blue-500" />
+                        </div>
+                      )}
+                    </button>
+                  ),
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Premium Popup */}
       <PremiumPopup
         isOpen={showPremiumPopup}

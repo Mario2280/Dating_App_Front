@@ -1,4 +1,4 @@
-import AuthService from "./auth.service"
+import AuthService, { CompleteProfileData } from "./auth.service"
 import type { TelegramUser, ProfileData } from "./types"
 import { cloudStorage } from '@telegram-apps/sdk-react'
 
@@ -46,9 +46,11 @@ export function clearTelegramAuth(): void {
   if(storage.deleteItem){
     storage.deleteItem("telegram_user")
     storage.deleteItem("profile_data")
+    storage.deleteItem("search_filters")
   } else {
     storage.removeItem("telegram_user")
     storage.removeItem("profile_data")
+    storage.removeItem("search_filters")
   }
   
 }
@@ -63,6 +65,19 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
       return null
     }
 
+    // Save complete profile data including chats and likes
+    if (response.profile) {
+      saveProfileData(response.profile)
+      
+      // Save additional data if available
+      if (response.chats) {
+        saveChatsData(response.chats)
+      }
+      if (response.likes) {
+        saveLikesData(response.likes)
+      }
+    }
+
     return response.profile || null
   } catch (error) {
     console.error("Registration check failed:", error)
@@ -72,8 +87,8 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
 }
 
 // Save profile data locally
-export function saveProfileData(profile: ProfileData): void {
-  if(!storage) return
+export function saveProfileData(profile: Partial<CompleteProfileData>): void {
+  if(!storage) return null
   storage.setItem("profile_data", JSON.stringify(profile))
 }
 
@@ -95,5 +110,59 @@ export function updateProfileData(updates: Partial<ProfileData>): void {
   if (currentProfile) {
     const updatedProfile = { ...currentProfile, ...updates }
     saveProfileData(updatedProfile)
+  }
+}
+
+// Save search filters
+export function saveSearchFilters(filters: any): void {
+  if(!storage) return
+  storage.setItem("search_filters", JSON.stringify(filters))
+}
+
+// Get search filters
+export function getSearchFilters(): any | null {
+  if(!storage) return null
+
+  try {
+    const filtersData = storage.getItem("search_filters")
+    return filtersData ? JSON.parse(filtersData) : null
+  } catch {
+    return null
+  }
+}
+
+// Save chats data
+export function saveChatsData(chats: any[]): void {
+  if(!storage) return
+  storage.setItem("chats_data", JSON.stringify(chats))
+}
+
+// Get chats data
+export function getChatsData(): any[] | null {
+  if(!storage) return null
+
+  try {
+    const chatsData = storage.getItem("chats_data")
+    return chatsData ? JSON.parse(chatsData) : []
+  } catch {
+    return []
+  }
+}
+
+// Save likes data
+export function saveLikesData(likes: any[]): void {
+  if(!storage) return
+  storage.setItem("likes_data", JSON.stringify(likes))
+}
+
+// Get likes data
+export function getLikesData(): any[] | null {
+  if(!storage) return null
+
+  try {
+    const likesData = storage.getItem("likes_data")
+    return likesData ? JSON.parse(likesData) : []
+  } catch {
+    return []
   }
 }

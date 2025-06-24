@@ -18,31 +18,31 @@ interface MainScreenProps {
 
 const profiles = [
   {
-    id: 1,
+    id: 0,
     name: "Анна",
     age: 19,
     occupation: "Модель",
     location: "Минск, Беларусь",
     distance: "1 км",
-    image: "/placeholder.svg?height=500&width=400",
+    image: "/girl_3.jpg",
   },
   {
-    id: 2,
+    id: 1,
     name: "Мария",
     age: 22,
     occupation: "Фотограф",
     location: "Минск, Беларусь",
     distance: "3 км",
-    image: "/placeholder.svg?height=500&width=400",
+    image: "/girl_2.webp",
   },
   {
-    id: 3,
+    id: 2,
     name: "Елена",
     age: 24,
     occupation: "Дизайнер",
     location: "Минск, Беларусь",
     distance: "5 км",
-    image: "/placeholder.svg?height=500&width=400",
+    image: "/girl_1.jpg",
   },
 ]
 
@@ -202,39 +202,39 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
       {/* Swipeable Cards */}
       <div className="px-4 flex-1 relative h-[500px] mb-8">
         <AnimatePresence mode="popLayout">
-          {currentProfiles.map((profile, index) => (
-            <motion.div
-              key={profile.id}
-              style={{
-                zIndex: swipingCard?.id === profile.id ? 1000 : currentProfiles.length - index,
-                y: pullUpDistance > 0 && index === 0 ? -pullUpDistance : 0,
-                transformOrigin: "50% 20%", // Ensure consistent transform origin
-              }}
-              animate={
-                swipingCard?.id === profile.id
-                  ? {
-                      x: swipingCard.direction === "left" ? -500 : 500,
-                      rotate: swipingCard.direction === "left" ? -45 : 45,
-                      opacity: 0,
-                      scale: 0.8,
-                    }
-                  : {}
-              }
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              exit={{
-                opacity: 0,
-                scale: 0.8,
-                transition: { duration: 0.2 },
-              }}
-            >
-              <SwipeableCard
-                profile={profile}
-                onSwipeLeft={handleSwipeLeft}
-                onSwipeRight={handleSwipeRight}
-                onPullUp={handlePullUp}
-              />
-            </motion.div>
-          ))}
+        {currentProfiles.map((profile, index) => (
+        <motion.div
+          key={profile.id}
+          style={{
+            zIndex: currentProfiles.length - index, // Верхняя карточка всегда имеет z-index выше
+            position: "absolute", // Чтобы карточки накладывались друг на друга
+            top: 0,
+            left: 0,
+            right: 0,
+            y: pullUpDistance > 0 && index === 0 ? -pullUpDistance : 0,
+            transformOrigin: "50% 20%",
+          }}
+          animate={
+            swipingCard?.id === profile.id && index === 0 // Анимируем только верхнюю карточку
+              ? {
+                  x: swipingCard.direction === "left" ? -500 : 500,
+                  rotate: swipingCard.direction === "left" ? -45 : 45,
+                  opacity: 0,
+                  scale: 0.8,
+                }
+              : {}
+          }
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+        >
+          <SwipeableCard
+            profile={profile}
+            onSwipeLeft={() => handleSwipeLeft(profile.id)}
+            onSwipeRight={() => handleSwipeRight(profile.id)}
+            onPullUp={handlePullUp}
+          />
+        </motion.div>
+      ))}
         </AnimatePresence>
 
         {/* Pull up indicator */}

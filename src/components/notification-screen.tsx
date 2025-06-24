@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { getProfileData, saveProfileData } from "@/lib/telegram-auth"
+import { saveProfileData } from "@/lib/telegram-auth"
 import AuthService, { type CompleteProfileData } from "@/lib/auth.service"
 import { useEffect, useState } from "react"
 
@@ -22,7 +22,7 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
     promotions: true,
     updates: true,
   })
-
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false)
   useEffect(() => {
       if (currentUser?.notification_settings) {
         setNotificationSettings(currentUser.notification_settings)
@@ -30,53 +30,85 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
       }
     }, [currentUser])
 
-  const handleEnableNotifications = async () => {
-    try {
-      // Convert notification settings to bitmask
-      const settingsBitmask =
-        (notificationSettings.matches ? 1 : 0) |
-        (notificationSettings.messages ? 2 : 0) |
-        (notificationSettings.likes ? 4 : 0) |
-        (notificationSettings.super_likes ? 8 : 0) |
-        (notificationSettings.promotions ? 16 : 0) |
-        (notificationSettings.updates ? 32 : 0)
-
-      const currentProfile = currentUser
-
-      const completeProfileData: CompleteProfileData = {
-        ...currentProfile,
-        notification_settings: settingsBitmask,
-        wallets: currentProfile?.wallets || [],
+    const createUserProfile = async () => {
+      setIsCreatingProfile(true)
+      try {
+        // Convert notification settings to bitmask
+        const settingsBitmask =
+          (notificationSettings.matches ? 1 : 0) |
+          (notificationSettings.messages ? 2 : 0) |
+          (notificationSettings.likes ? 4 : 0) |
+          (notificationSettings.super_likes ? 8 : 0) |
+          (notificationSettings.promotions ? 16 : 0) |
+          (notificationSettings.updates ? 32 : 0)
+  
+        const currentProfile = currentUser
+  
+        const completeProfileData: CompleteProfileData = {
+          ...currentProfile,
+          notification_settings: settingsBitmask,
+          wallets: currentProfile?.wallets || [],
+        }
+  
+        console.log("Creating profile with data:", completeProfileData)
+  
+        // Create profile on backend
+        const createdProfile = await AuthService.createCompleteProfile(completeProfileData)
+        console.log("Profile created successfully:", createdProfile)
+  
+        // Update local storage with server response
+        saveProfileData({
+          ...createdProfile,
+        })
+  
+        return createdProfile
+      } catch (error) {
+        console.error("Failed to create profile:", error)
+        throw error
+      } finally {
+        setIsCreatingProfile(false)
       }
-
-      // Create profile on backend
-      const createdProfile = await AuthService.createCompleteProfile(completeProfileData)
-
-      // Update local storage with server response
-      saveProfileData({
-        ...createdProfile,
-      })
-
-      // Open Telegram bot for notifications
-      window.open("https://t.me/SomeDatingBot?start=notify", "_blank")
-
-      onNext()
-    } catch (error) {
-      console.error("Failed to create profile:", error)
-      // Still proceed to next screen even if backend fails
-      onNext()
     }
-  }
+  
+    const handleEnableNotifications = async () => {
+      try {
+        await createUserProfile()
+        
+        // Open Telegram bot for notifications
+        window.open("https://t.me/SomeDatingBot?start=notify", "_blank")
+  
+        onNext()
+      } catch (error) {
+        console.error("Failed to create profile:", error)
+        // Still proceed to next screen even if backend fails
+        onNext()
+      }
+    }
 
-  const handleBack = () => {
-    onUpdate({ notification_settings: {...notificationSettings} })
-    onBack()
-  }
-
-  const handleCreateUser = () => {
-    onUpdate({ notification_settings: {...notificationSettings} })
-    onBack()
-  }
+    const handleSkip = async () => {
+      try {
+        await createUserProfile()
+        onNext()
+      } catch (error) {
+        console.error("Failed to create profile:", error)
+        onNext()
+      }
+    }
+  
+    const handleContinue = async () => {
+      try {
+        await createUserProfile()
+        onNext()
+      } catch (error) {
+        console.error("Failed to create profile:", error)
+        onNext()
+      }
+    }
+  
+    const handleBack = () => {
+      onUpdate({ notification_settings: {...notificationSettings} })
+      onBack()
+    }
 
   return (
     <div className="min-h-screen bg-white">
@@ -84,8 +116,12 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
         <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-2xl">
           <ChevronLeft className="h-6 w-6 text-blue-500" />
         </Button>
-        <button onClick={onNext} className="text-blue-500 text-lg font-medium">
-          Пропустить
+        <button 
+          onClick={handleSkip} 
+          className="text-blue-500 text-lg font-medium"
+          disabled={isCreatingProfile}
+        >
+          {isCreatingProfile ? "Создание..." : "Пропустить"}
         </button>
       </div>
 
@@ -108,9 +144,10 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
 
           <button
             onClick={handleEnableNotifications}
-            className="text-3xl font-bold text-gray-900 mb-4 text-center hover:text-blue-500 transition-colors"
+            className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center hover:text-blue-500 transition-colors"
+            disabled={isCreatingProfile}
           >
-            Открыть чат с ботом
+            {isCreatingProfile ? "Создание профиля..." : "Открыть чат с ботом"}
           </button>
 
           <p className="text-gray-600 text-lg text-center mb-12 max-w-sm">
@@ -120,7 +157,7 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
         </div>
 
         <div className="px-6 space-y-4 mb-32">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Настройки уведомлений</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Настройки уведомлений</h3>
 
           {Object.entries({
             matches: "Новые совпадения",
@@ -131,7 +168,7 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
             updates: "Обновления приложения",
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between py-2">
-              <span className="text-gray-700">{label}</span>
+              <span className="text-gray-700 dark:text-gray-300">{label}</span>
               <button
                 onClick={() =>
                   setNotificationSettings((prev) => ({
@@ -155,10 +192,11 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
 
         <div className="fixed bottom-8 left-6 right-6">
           <Button
-            onClick={onNext}
+            onClick={handleContinue}
             className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
+            disabled={isCreatingProfile}
           >
-            Не беспокоить
+            {isCreatingProfile ? "Создание профиля..." : "Не беспокоить"}
           </Button>
         </div>
       </div>
