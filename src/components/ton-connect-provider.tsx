@@ -21,7 +21,7 @@ export function TonConnectProvider({ children }: TonConnectProviderProps) {
     return <>{children}</>
   }
 
-  const manifestUrl = "https://your-domain.com/tonconnect-manifest.json"
+  const manifestUrl = "https://c6my82-37-214-29-213.ru.tuna.am/tonconnect-manifest.json"
 
   return <TonConnectUIProvider manifestUrl={manifestUrl}>{children}</TonConnectUIProvider>
 }
