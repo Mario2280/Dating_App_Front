@@ -367,12 +367,12 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                       setShowLocationStep(true)
 
                       // Auto-continue after a short delay to show the flow
-                      setTimeout(() => {
-                        if (onAuthenticated) {
-                          onAuthenticated(fakeTelegramUser)
-                        }
-                        onNext()
-                      }, 1000)
+                      // setTimeout(() => {
+                      //   if (onAuthenticated) {
+                      //     onAuthenticated(fakeTelegramUser)
+                      //   }
+                      //   onNext()
+                      // }, 1000)
                     }}
                     className="w-full text-gray-400 text-sm font-medium opacity-50 hover:opacity-75 transition-opacity"
                   >

@@ -57,7 +57,7 @@ export type Screen =
   | "moderator-panel"
 
 export default function DatingApp() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>(import.meta.env.VITE_NODE_ENV === "prod" ? "auth-check" : "welcome")
+  const [currentScreen, setCurrentScreen] = useState<Screen>(import.meta.env.VITE_NODE_ENV === "prod" ? "welcome" : "welcome")
   const [instagramPhotoIndex, setInstagramPhotoIndex] = useState(0)
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null)
   const [currentUser, setCurrentUser] = useState<ProfileData | null>(null)
