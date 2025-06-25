@@ -116,6 +116,8 @@ export function updateProfileData(updates: Partial<ProfileData>): void {
 // Save search filters
 export function saveSearchFilters(filters: any): void {
   if(!storage) return
+  console.log(filters);
+  
   storage.setItem("search_filters", JSON.stringify(filters))
 }
 
@@ -164,5 +166,33 @@ export function getLikesData(): any[] | null {
     return likesData ? JSON.parse(likesData) : []
   } catch {
     return []
+  }
+}
+
+// Save current active profile data
+export function saveCurrentProfile(profile: any): void {
+  if (!storage) return
+  storage.setItem("current_profile", JSON.stringify(profile))
+}
+
+// Get current active profile data
+export function getCurrentProfile(): any | null {
+  if (!storage) return null
+
+  try {
+    const profileData = storage.getItem("current_profile")
+    return profileData ? JSON.parse(profileData) : null
+  } catch {
+    return null
+  }
+}
+
+// Clear current profile
+export function clearCurrentProfile(): void {
+  if (!storage) return
+  if (storage.deleteItem) {
+    storage.deleteItem("current_profile")
+  } else {
+    storage.removeItem("current_profile")
   }
 }

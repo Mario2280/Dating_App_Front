@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { MapPin, CheckCircle, AlertCircle, Settings } from "lucide-react"
 import { useLocation } from "@/contexts/location-context"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { LocationData } from '@/lib/types'
 
 interface LocationManagerProps {
   onLocationGranted?: () => void
@@ -22,6 +23,7 @@ export default function LocationManager({
 }: LocationManagerProps) {
   const { location, isMounted, isLoading, error, requestLocation, openLocationSettings, hasLocationPermission } =
     useLocation()
+  const [locationCoord, setLocationCoord] = useState<Partial<LocationData>>({ latitude: 0, longitude: 0 })
 
   const handleLocationRequest = async () => {
     if (!hasLocationPermission) {
@@ -39,7 +41,9 @@ export default function LocationManager({
   // Add this useEffect after the existing handleLocationRequest function
   useEffect(() => {
     if (hasLocationPermission && onLocationGranted) {
+      requestLocation().then(() => setLocationCoord(location))
       onLocationGranted()
+      
     } else if (!hasLocationPermission && onLocationDenied) {
       //onLocationDenied()
     }
@@ -68,7 +72,7 @@ export default function LocationManager({
     <div className={containerClass}>
       <div className="flex items-center gap-3 mb-3">
         <MapPin className="h-5 w-5 text-blue-500" />
-        <span className="font-medium text-gray-900">Доступ к геолокации</span>
+        <span className="font-medium text-gray-900">Доступ к геолокации</span> 
         {hasLocationPermission && <CheckCircle className="h-5 w-5 text-green-500" />}
         {error && <AlertCircle className="h-5 w-5 text-red-500" />}
       </div>
@@ -90,7 +94,7 @@ export default function LocationManager({
         </Button>
       )}
 
-      {hasLocationPermission && location && <div className="text-sm text-green-600">✓ Геолокация получена</div>}
+      {hasLocationPermission && location && <div className="text-sm text-green-600">✓ Геолокация получена. Ваши координаты: {location.latitude}, {location.longitude}</div>}
 
       {error && <div className="text-sm text-red-600 mt-2">⚠ {error}</div>}
     </div>

@@ -71,7 +71,7 @@ export default function DatingApp() {
     }
   }, [])
 
-  const navigateToScreen = (screen: Screen) => {
+  const navigateToScreen = (screen: Screen, data?: any) => {
     setCurrentScreen(screen)
   }
 

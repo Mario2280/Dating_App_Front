@@ -24,8 +24,8 @@ const downloadImageAsBase64 = async (url: string): Promise<string> => {
 
     const response = await fetch(url, {
       signal: controller.signal,
-      mode: "cors",
-    })
+      mode: "no-cors",
+    }).catch(() =>{console.log("Failed to fetch image")})
 
     clearTimeout(timeoutId)
 
@@ -107,10 +107,10 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
         setProfileImage(currentUser.profile_photo)
       } else if (telegramUser?.photo_url) {
         // Download and convert Telegram photo
-        const base64Image = await downloadImageAsBase64(telegramUser.photo_url)
-        setProfileImage(base64Image)
+        //const base64Image = await downloadImageAsBase64(telegramUser.photo_url)
+        //setProfileImage(base64Image)
         // Save to profile data immediately
-        onUpdate({ profile_photo: base64Image })
+        //onUpdate({ profile_photo: base64Image })
       } else {
         setProfileImage("/placeholder.svg?height=128&width=128")
       }
@@ -143,7 +143,9 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
   }
 
   const handleAgeChange = (newAge: number) => {
-    setAge(newAge)
+    // Ensure age is not below 18
+    const validAge = Math.max(newAge, 18)
+    setAge(validAge)
     // Clear birth date when age is manually changed
     setBirthDate("")
   }
@@ -189,7 +191,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
           <div className="relative">
             <div className="w-32 h-32 rounded-3xl overflow-hidden bg-gray-100">
               <Image
-                src={profileImage || "/placeholder.svg"}
+                src={profileImage || telegramUser?.photo_url}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -231,6 +233,7 @@ export default function ProfileDetailsScreen({ onNext, onBack, onUpdate, current
             <label className="text-sm text-gray-500 mb-2 block">Возраст</label>
             <Input
               type="number"
+              
               value={age}
               onChange={(e) => handleAgeChange(Number(e.target.value))}
               className="h-14 text-lg border-gray-200 dark:border-gray-700 rounded-2xl dark:bg-gray-800 dark:text-white"

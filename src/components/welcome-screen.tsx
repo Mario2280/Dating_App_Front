@@ -7,7 +7,7 @@ import TelegramLoginWidget from "./telegram-login-widget"
 import WalletConnectionModal from "./wallet-connection-modal"
 import LocationManager from "./location-manager"
 import { saveTelegramUser, saveProfileData, getTelegramUser } from "@/lib/telegram-auth"
-import type { TelegramUser, WalletInfo } from "@/lib/types"
+import type { LocationData, TelegramUser, WalletInfo } from "@/lib/types"
 import { Img as Image } from "react-image"
 import WalletConnectionStub from "./wallet-connection-stub"
 import type { ProfileData } from "@/lib/types"
@@ -44,7 +44,7 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
   const [locationGranted, setLocationGranted] = useState(false)
   const [showLocationStep, setShowLocationStep] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-
+  
   // Check for existing user on mount
   useEffect(() => {
     const checkExistingUser = () => {
@@ -278,7 +278,7 @@ export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUs
                       }`}
                     ></div>
                     <span className="text-sm font-medium">
-                      {locationGranted ? "Шаг 2: Геолокация разрешена ✓" : "Шаг 2: Разрешите доступ к геолокации"}
+                      {locationGranted ? `Шаг 2: Геолокация разрешена ✓` : "Шаг 2: Разрешите доступ к геолокации"}
                     </span>
                   </div>
                 </div>

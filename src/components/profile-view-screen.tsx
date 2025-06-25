@@ -1,13 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Img as Image } from 'react-image';
+import { Img as Image } from "react-image"
 import { ChevronLeft, Heart, MessageSquare, MapPin, Send, X, Instagram } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import PremiumPopup from "./premium-popup"
 import type { Screen } from "@/App"
+import { getCurrentProfile, saveCurrentProfile, getProfileData } from "@/lib/telegram-auth"
+
 interface ProfileViewScreenProps {
   onBack: () => void
   onPhotoClick?: (photoIndex: number) => void
@@ -20,6 +22,9 @@ interface ProfileViewScreenProps {
     location: string
     distance: string
     image: string
+    about: string
+    interests: string[]
+    instagramPhotos: string[]
   }
 }
 
@@ -27,16 +32,25 @@ export default function ProfileViewScreen({
   onBack,
   onPhotoClick,
   navigateToScreen,
-  profileData = {
-    id: 1,
-    name: "Анна Санкевич",
-    age: 19,
-    occupation: "Модель",
-    location: "Минск, Беларусь",
-    distance: "1 км",
-    image: "/placeholder.svg?height=400&width=400",
-  },
+  profileData,
 }: ProfileViewScreenProps) {
+  // Get profile data from storage if not provided
+  const currentProfile = getCurrentProfile()
+  const userProfile = getProfileData()
+  const profile = profileData ||
+    currentProfile || {
+      id: 1,
+      name: "Анна Санкевич",
+      age: 19,
+      occupation: "Модель",
+      location: "Минск, Беларусь",
+      distance: "1 км",
+      image: "/girl_3.jpg",
+      about: "Привет! Я Аня. Мне нравится общаться с новыми людьми...",
+      interests: ["Музыка", "Книги", "Дайвинг", "Танцы", "Моделинг"],
+      instagramPhotos: ["/girl_1.jpg", "/girl_2.jpg", "/girl_3.jpg"],
+    }
+
   const [isAboutExpanded, setIsAboutExpanded] = useState(false)
   const [likesCount, setLikesCount] = useState(3)
   const [showPremiumPopup, setShowPremiumPopup] = useState(false)
@@ -45,18 +59,13 @@ export default function ProfileViewScreen({
   const [isAnimating, setIsAnimating] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null)
 
-  const fullAboutText = `Привет! Я Аня. Мне нравится общаться с новыми людьми. Обожаю читать книги, особенно фантастику и детективы. В свободное время занимаюсь фотографией и путешествую. Ищу интересного собеседника для приятного общения и, возможно, серьезных отношений. Люблю активный отдых, походы в театр и кино. Готова к новым знакомствам и приключениям!`
+  const fullAboutText =
+    profile.about ||
+    `Привет! Я ${profile.name}. Мне нравится общаться с новыми людьми. Обожаю читать книги, особенно фантастику и детективы. В свободное время занимаюсь фотографией и путешествую. Ищу интересного собеседника для приятного общения и, возможно, серьезных отношений. Люблю активный отдых, походы в театр и кино. Готова к новым знакомствам и приключениям!`
 
-  const shortAboutText = `Привет! Я Аня. Мне нравится общаться с новыми людьми. Обожаю читать...`
+  const shortAboutText = `${fullAboutText.substring(0, 80)}...`
 
-  const instagramPhotos = [
-    "/placeholder.svg?height=150&width=150",
-    "/placeholder.svg?height=150&width=150",
-    "/placeholder.svg?height=150&width=150",
-    "/placeholder.svg?height=150&width=150",
-    "/placeholder.svg?height=150&width=150",
-    "/placeholder.svg?height=150&width=150",
-  ]
+  const instagramPhotos = profile.instagramPhotos || ["/girl_1.jpg", "/girl_2.jpg", "/girl_3.jpg"]
 
   const handleSwipeLeft = () => {
     if (isAnimating) return
@@ -99,7 +108,8 @@ export default function ProfileViewScreen({
       return
     }
 
-    // Navigate to chat screen
+    // Save current profile for chat
+    saveCurrentProfile(profile)
     navigateToScreen("chat")
   }
 
@@ -151,8 +161,8 @@ export default function ProfileViewScreen({
 
             <div className="h-[400px] relative">
               <Image
-                src={profileData.image || "/placeholder.svg"}
-                alt={profileData.name}
+                src={profile.image || "/placeholder.svg"}
+                alt={profile.name}
                 className="absolute inset-0 w-full h-full object-cover"
               />
 
@@ -194,37 +204,37 @@ export default function ProfileViewScreen({
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold">
-                  {profileData.name}, {profileData.age}
+                  {profile.name}, {profile.age}
                 </h1>
-                <p className="text-gray-600">{profileData.occupation}</p>
+                <p className="text-gray-600">{profile.occupation}</p>
               </div>
               <Button
                 variant="outline"
                 size="icon"
                 className="rounded-full hover:scale-105 transition-transform"
-                onClick={() => navigateToScreen("chat")}
+                onClick={handleMessage}
                 disabled={isAnimating}
               >
                 <Send className="h-5 w-5 rotate-45 text-blue-500" />
               </Button>
             </div>
 
-            {/* Likes Counter */}
+            {/*Likes Counter
             <div className="mt-2 text-center text-sm text-gray-500">
               Осталось лайков: <span className="font-semibold text-blue-500">{likesCount}</span>
-            </div>
+            </div>*/}
 
             {/* Location */}
             <div className="mt-4">
               <h2 className="text-lg font-semibold">Location</h2>
               <div className="flex justify-between items-center">
-                <p className="text-gray-600">{profileData.location}</p>
+                <p className="text-gray-600">{profile.location}</p>
                 <Badge
                   variant="outline"
                   className="bg-blue-50 text-blue-500 flex items-center gap-1 px-3 py-1 rounded-full"
                 >
                   <MapPin className="h-4 w-4" />
-                  {profileData.distance}
+                  {profile.distance}
                 </Badge>
               </div>
             </div>
@@ -254,39 +264,26 @@ export default function ProfileViewScreen({
             <div className="mt-4">
               <h2 className="text-lg font-semibold">Интересы</h2>
               <div className="flex flex-wrap gap-2 mt-2">
-                <Badge variant="outline" className="rounded-full px-4 py-2 border-blue-300 flex items-center gap-1">
-                  <svg
-                    className="h-4 w-4 text-blue-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
+                {(profile.interests || ["Музыка", "Книги", "Дайвинг", "Танцы", "Моделинг"]).map((interest, index) => (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className={`rounded-full px-4 py-2 ${index < 2 ? "border-blue-300 flex items-center gap-1" : ""}`}
                   >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Музыка
-                </Badge>
-                <Badge variant="outline" className="rounded-full px-4 py-2 border-blue-300 flex items-center gap-1">
-                  <svg
-                    className="h-4 w-4 text-blue-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Книги
-                </Badge>
-                <Badge variant="outline" className="rounded-full px-4 py-2">
-                  Дайвинг
-                </Badge>
-                <Badge variant="outline" className="rounded-full px-4 py-2">
-                  Танцы
-                </Badge>
-                <Badge variant="outline" className="rounded-full px-4 py-2">
-                  Моделинг
-                </Badge>
+                    {index < 2 && (
+                      <svg
+                        className="h-4 w-4 text-blue-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                    {interest}
+                  </Badge>
+                ))}
               </div>
             </div>
 

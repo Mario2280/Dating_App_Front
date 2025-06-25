@@ -6,11 +6,11 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MoreHorizontal, Send, Clock, ChevronDown } from "lucide-react"
-import { Img as Image } from 'react-image';
+import { Img as Image } from "react-image"
 import { motion } from "framer-motion"
 import ComplaintModal, { type ComplaintReason } from "./complaint-modal"
 import ChatProfileView from "./chat-profile-view"
-import { getChatsData } from "@/lib/telegram-auth"
+import { getChatsData, getCurrentProfile } from "@/lib/telegram-auth"
 interface ChatScreenProps {
   onBack: () => void
 }
@@ -39,80 +39,47 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
   // Load chat data from backend
   useEffect(() => {
     const loadChatData = () => {
-      const chatsData = getChatsData()
-      if (chatsData && chatsData.length > 0) {
-        // For demo, use first chat
-        const currentChat = chatsData[0]
-        setChatData(currentChat)
+      // Get current profile from storage
+      const currentProfile = getCurrentProfile()
 
-        // Load messages if available
-        if (currentChat.messages) {
-          setChatMessages(currentChat.messages)
-        } else {
-          // Fallback to demo messages
-          setChatMessages([
-            {
-              id: 1,
-              text: "Привет, Давид! Видела в приложении, что мы уже несколько раз пересекались 😊",
-              time: "2:55",
-              sender: "anna",
-            },
-            {
-              id: 2,
-              text: "Ахах, приятно познакомиться, Анна! Может, выпьем кофе сегодня вечером? ☕",
-              time: "3:02",
-              sender: "me",
-              status: "read",
-            },
-            {
-              id: 3,
-              text: "Давай! 😊",
-              time: "3:10",
-              sender: "anna",
-            },
-            {
-              id: 4,
-              text: "Чуть позже напишу. До скорого!",
-              time: "3:12",
-              sender: "me",
-              status: "read",
-            },
-          ])
-        }
+      if (currentProfile) {
+        setChatData({
+          name: currentProfile.name,
+          avatar: currentProfile.image,
+          age: currentProfile.age,
+          occupation: currentProfile.occupation,
+          location: currentProfile.location,
+          distance: currentProfile.distance,
+        })
+
+        // Start with empty messages for new chat
+        setChatMessages([])
       } else {
-        // Fallback to demo data
-        setChatMessages([
-        {
-          id: 1,
-          text: "Привет, Давид! Видела в приложении, что мы уже несколько раз пересекались 😊",
-          time: "2:55",
-          sender: "anna",
-        },
-        {
-          id: 2,
-          text: "Ахах, приятно познакомиться, Анна! Может, выпьем кофе сегодня вечером? ☕",
-          time: "3:02",
-          sender: "me",
-          status: "read",
-        },
-        {
-          id: 3,
-          text: "Давай! 😊",
-          time: "3:10",
-          sender: "anna",
-        },
-        {
-          id: 4,
-          text: "Чуть позже напишу. До скорого!",
-          time: "3:12",
-          sender: "me",
-          status: "read",
-        },
-      ])
+        // Fallback to existing logic
+        const chatsData = getChatsData()
+        if (chatsData && chatsData.length > 0) {
+          const currentChat = chatsData[0]
+          setChatData(currentChat)
+
+          if (currentChat.messages) {
+            setChatMessages(currentChat.messages)
+          } else {
+            setChatMessages([])
+          }
+        } else {
+          // Default fallback
+          setChatData({
+            name: "Анна",
+            avatar: "/girl_3.jpg",
+            age: 19,
+            occupation: "Модель",
+          })
+          setChatMessages([])
+        }
       }
     }
     loadChatData()
-}, [])
+  }, [])
 
   // Simulate message read status updates
   useEffect(() => {
@@ -233,8 +200,8 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           </div>
 
           <div className="cursor-pointer">
-          <h2 className="font-semibold text-lg dark:text-white">{chatData?.name || "Анна"}</h2>
-          <p className="text-blue-500 text-sm">● У вас мэтч</p>
+            <h2 className="font-semibold text-lg dark:text-white">{chatData?.name || "Анна"}</h2>
+            <p className="text-blue-500 text-sm">● У вас мэтч</p>
           </div>
         </div>
 

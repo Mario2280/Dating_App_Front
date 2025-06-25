@@ -17,7 +17,7 @@ import { Img as Image } from 'react-image';
 import type { Screen } from "@/App"
 import { calculateAgeFromDate } from './profile-details-screen'
 import AuthService, { type CompleteProfileData } from "@/lib/auth.service"
-import { getProfileData, saveProfileData } from "@/lib/telegram-auth"
+import { getProfileData, getTelegramUser, saveProfileData } from "@/lib/telegram-auth"
 interface ProfileEditScreenProps {
   onBack: () => void
   onSave: () => void
@@ -138,14 +138,14 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
   const [currentProfile, setCurrentProfile] = useState<Partial<CompleteProfileData> | null>(null)
   const [photosToDelete, setPhotosToDelete] = useState<number[]>([])
   const [firstName, setFirstName] = useState("Анна")
-  const [profileImage, setProfileImage] = useState("/placeholder.svg?height=128&width=128")
+  const [profileImage, setProfileImage] = useState()
   const [photos, setPhotos] = useState<(string | null)[]>([])
   const [birthDate, setBirthDate] = useState("")
   // Basic info
   const [age, setAge] = useState(19)
   const [selectedGender, setSelectedGender] = useState<keyof typeof genderOptions | "">("")
   const [location, setLocation] = useState("Минск, Беларусь")
-
+  const tgData = getTelegramUser()
   // Profile details
   const [selectedPurpose, setSelectedPurpose] = useState<keyof typeof purposeOptions | "">("")
   const [selectedEducation, setSelectedEducation] = useState<keyof typeof educationOptions | "">("")
@@ -344,7 +344,8 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
   }
 
   const handleAgeChange = (newAge: number) => {
-    setAge(newAge)
+    const validAge = Math.max(newAge, 18)
+    setAge(validAge)
     // Clear birth date when age is manually changed
     setBirthDate("")
   }
@@ -507,7 +508,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
           <div className="relative">
             <div className="w-32 h-32 rounded-3xl overflow-hidden bg-gray-100">
               <Image
-                src={profileImage || "/placeholder.svg"}
+                src={profileImage || tgData?.photo_url}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -545,6 +546,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
             <label className="text-sm text-gray-500 mb-2 block">Возраст</label>
             <Input
               type="number"
+              min="18"
               value={age}
               onChange={(e) => handleAgeChange(Number(e.target.value))}
               className="h-12 text-lg border-gray-200 rounded-xl"
@@ -951,10 +953,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               {currentProfile?.chat_id ? (
                 <button
-                  onClick={() => {
-                    // Disable notifications logic here
-                    console.log("Disabling notifications for chat_id:", currentProfile.chat_id)
-                  }}
+                  onClick={() => window.open("https://t.me/SomeDatingBot?start=unnotify", "_blank")}
                   className="w-full text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center hover:text-red-500 transition-colors p-3 bg-red-50 dark:bg-red-900/20 rounded-xl"
                 >
                   Отключить уведомления

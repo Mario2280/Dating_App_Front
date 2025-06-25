@@ -11,51 +11,129 @@ import BottomNavigation from "./bottom-navigation"
 import PremiumPopup from "./premium-popup"
 import { useLocation } from "@/contexts/location-context"
 import type { Screen } from "@/App"
+import { getSearchFilters, saveCurrentProfile } from "@/lib/telegram-auth"
 interface MainScreenProps {
   onProfileClick: () => void
   navigateToScreen: (screen: Screen) => void
 }
 
-const profiles = [
-  {
-    id: 0,
-    name: "Анна",
-    age: 19,
-    occupation: "Модель",
-    location: "Минск, Беларусь",
-    distance: "1 км",
-    image: "/girl_3.jpg",
-  },
-  {
-    id: 1,
-    name: "Мария",
-    age: 22,
-    occupation: "Фотограф",
-    location: "Минск, Беларусь",
-    distance: "3 км",
-    image: "/girl_2.webp",
-  },
-  {
-    id: 2,
-    name: "Елена",
-    age: 24,
-    occupation: "Дизайнер",
-    location: "Минск, Беларусь",
-    distance: "5 км",
-    image: "/girl_1.jpg",
-  },
+
+const names = [
+  "Анна", "Мария", "Елена"
+];
+
+// Add interface for profile data
+interface ProfileData {
+  id: number
+  name: string
+  age: number
+  occupation: string
+  location: string
+  distance: string
+  image: string
+  about?: string
+  interests?: string[]
+}
+
+const aboutTexts = [
+  "Привет! Мне нравится общаться с новыми людьми. Обожаю читать книги, особенно фантастику и детективы. В свободное время занимаюсь фотографией и путешествую.",
+  "Привет! Люблю активный отдых, походы в театр и кино. Готова к новым знакомствам и приключениям!",
+  "Здравствуйте! Увлекаюсь искусством и культурой. Ищу интересного собеседника для приятного общения.",
 ]
 
+const allInterests = [
+  "Музыка",
+  "Книги",
+  "Дайвинг",
+  "Танцы",
+  "Моделинг",
+  "Фотография",
+  "Путешествия",
+  "Спорт",
+  "Кино",
+  "Театр",
+  "Искусство",
+  "Готовка",
+  "Йога",
+  "Фитнес",
+]
+
+const occupations = [
+  "Модель", "Фотограф", "Дизайнер", "Журналист", "Программист", "Маркетолог",
+  "Менеджер", "Актриса", "Певица", "Врач", "Учитель", "Архитектор",
+  "Стилист", "Переводчик", "Повар", "Блогер", "Спортсмен", "Юрист",
+  "Инженер", "Психолог"
+];
+
+const distances = [
+  "1 км", "2 км", "3 км", "4 км", "5 км", "6 км", "7 км", "8 км", "9 км", "10 км"
+];
+
+const images = ["/girl_3.jpg", "/girl_2.jpg", "/girl_1.jpg"];
+
+function getRandomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function getRandomItems<T>(array: T[], count: number): T[] {
+  const shuffled = [...array].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count)
+}
+
+const generateProfile = (id: number): ProfileData => {
+  const filters = getSearchFilters()
+
+  // Apply age filter if exists
+  let age = getRandomInt(18, 56)
+  if (filters?.ageRange) {
+    const [min, max] = filters.ageRange
+    age = getRandomInt(min, max)
+  }
+
+  // Apply distance filter if exists
+  let distance = distances[id % distances.length]
+  if (filters?.distance) {
+    const maxDist = Math.min(filters.distance, 10)
+    const availableDistances = distances.filter((d) => Number.parseInt(d) <= maxDist)
+    distance = availableDistances[id % availableDistances.length] || distances[0]
+  }
+
+  // Generate interests (3-5 random interests)
+  const interests = getRandomItems(allInterests, getRandomInt(3, 5))
+
+  return {
+    id,
+    name: names[id % names.length],
+    age,
+    occupation: occupations[id % occupations.length],
+    location: "Беларусь",
+    distance,
+    image: images[id % images.length],
+    about: aboutTexts[id % aboutTexts.length],
+    interests,
+    instagramPhotos: [images[0], images[1], images[2]],
+  }
+}
+
+
+
 export default function MainScreen({ onProfileClick, navigateToScreen }: MainScreenProps) {
-  const [currentProfiles, setCurrentProfiles] = useState(profiles)
+  const [currentProfiles, setCurrentProfiles] = useState(() => [
+    generateProfile(0),
+    generateProfile(1),
+    generateProfile(2),
+  ])
+  const [nextProfileId, setNextProfileId] = useState(3)
   const [swipingCard, setSwipingCard] = useState<{ id: number; direction: "left" | "right" } | null>(null)
-  const [likesCount, setLikesCount] = useState(3)
+  const [likesCount, setLikesCount] = useState(50)
   const [showPremiumPopup, setShowPremiumPopup] = useState(false)
   const [premiumPopupType, setPremiumPopupType] = useState<"likes" | "messages">("likes")
   const [hasWallet] = useState(false)
   const [pullUpDistance, setPullUpDistance] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const startYRef = useRef(0)
+  
+  const [currentProfileData, setCurrentProfileData] = useState<ProfileData | null>(null)
   
   // Access location context for background location updates
   const { requestLocation, hasLocationPermission } = useLocation()
@@ -96,15 +174,28 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
 
     // Show next card after 200ms (before animation completes)
     setTimeout(() => {
-      setCurrentProfiles((prev) => prev.filter((profile) => profile.id !== id))
+      setCurrentProfiles((prev) => {
+        const filtered = prev.filter((profile) => profile.id !== id)
 
+        // Add a new profile to maintain 3 cards
+        if (filtered.length < 3) {
+          const newProfile = generateProfile(nextProfileId)
+          setNextProfileId((prev) => prev + 1)
+          return [...filtered, newProfile]
+        }
+
+        return filtered
+      })
       if (direction === "right" && Math.random() > 0.5) {
+        // Save the liked profile for match celebration
+        const likedProfile = currentProfiles.find((p) => p.id === id)
+        if (likedProfile) {
+          saveCurrentProfile(likedProfile)
+        }
         navigateToScreen("match-celebration")
       }
 
-      if (currentProfiles.length === 1) {
-        setTimeout(() => setCurrentProfiles(profiles), 500)
-      }
+      
     }, 200)
 
     // Clear swipe state after animation completes
@@ -122,6 +213,10 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
   }
 
   const handlePullUp = (id: number) => {
+    const currentProfile = currentProfiles.find((p) => p.id === id)
+    if (currentProfile) {
+      saveCurrentProfile(currentProfile)
+    }
     // Pass the current profile data and navigation function
     navigateToScreen("profile-view")
   }
@@ -202,12 +297,12 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
       {/* Swipeable Cards */}
       <div className="px-4 flex-1 relative h-[500px] mb-8">
         <AnimatePresence mode="popLayout">
-        {currentProfiles.map((profile, index) => (
+        {currentProfiles.slice(0, 3).map((profile, index) => (
         <motion.div
           key={profile.id}
           style={{
-            zIndex: currentProfiles.length - index, // Верхняя карточка всегда имеет z-index выше
-            position: "absolute", // Чтобы карточки накладывались друг на друга
+            zIndex: 3 - index, // Top card has highest z-index
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
@@ -215,7 +310,7 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
             transformOrigin: "50% 20%",
           }}
           animate={
-            swipingCard?.id === profile.id && index === 0 // Анимируем только верхнюю карточку
+            swipingCard?.id === profile.id && index === 0
               ? {
                   x: swipingCard.direction === "left" ? -500 : 500,
                   rotate: swipingCard.direction === "left" ? -45 : 45,
@@ -270,8 +365,10 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
           size="icon"
           className="h-16 w-16 rounded-full shadow-lg"
           onClick={() => {
-            setPremiumPopupType("messages")
-            setShowPremiumPopup(true)
+            if (currentProfiles.length > 0) {
+              saveCurrentProfile(currentProfiles[0])
+              navigateToScreen("chat")
+            }
           }}
         >
           <MessageSquare className="h-8 w-8 text-purple-500" />

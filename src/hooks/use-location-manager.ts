@@ -150,11 +150,11 @@ export function useLocationManager(): UseLocationManagerReturn {
           })
         }
       } else {
-        setError("Не удалось получить геолокацию")
+        //setError("Не удалось получить геолокацию")
       }
     } catch (err) {
       console.error("Error requesting location:", err)
-      setError("Ошибка при запросе геолокации")
+      //setError("Ошибка при запросе геолокации")
     } finally {
       setIsLoading(false)
     }

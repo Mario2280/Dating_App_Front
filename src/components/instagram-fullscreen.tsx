@@ -10,12 +10,9 @@ interface InstagramFullscreenProps {
 }
 
 const photos = [
-  "/placeholder.svg?height=800&width=400",
-  "/placeholder.svg?height=800&width=400",
-  "/placeholder.svg?height=800&width=400",
-  "/placeholder.svg?height=800&width=400",
-  "/placeholder.svg?height=800&width=400",
-  "/placeholder.svg?height=800&width=400",
+  "girl_1.jpg",
+  "girl_2.jpg",
+  "girl_3.jpg",
 ]
 
 export default function InstagramFullscreen({ onBack, initialPhotoIndex = 0 }: InstagramFullscreenProps) {

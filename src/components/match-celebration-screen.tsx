@@ -1,27 +1,40 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Img as Image } from 'react-image';
+import { Img as Image } from "react-image"
+import { getCurrentProfile, getTelegramUser } from "@/lib/telegram-auth"
 interface MatchCelebrationScreenProps {
   onMessage: () => void
   onContinue: () => void
 }
 
 export default function MatchCelebrationScreen({ onMessage, onContinue }: MatchCelebrationScreenProps) {
+  // Get current matched profile and user profile
+  const matchedProfile = getCurrentProfile()
+  const userProfile = getTelegramUser()
+
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
       <div className="flex-1 flex flex-col items-center justify-center">
         {/* Match Cards */}
         <div className="relative mb-12">
           <div className="relative">
-            {/* Left Card */}
+            {/* Left Card - User's photo */}
             <div className="w-48 h-64 rounded-3xl overflow-hidden transform -rotate-12 shadow-xl">
-              <Image src="/placeholder.svg?height=256&width=192" alt="Your photo" className="absolute inset-0 w-full h-full object-cover" />
+              <Image
+                src={userProfile?.photo_url || "/placeholder.svg?height=256&width=192"}
+                alt="Your photo"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
 
-            {/* Right Card */}
+            {/* Right Card - Matched profile photo */}
             <div className="absolute top-8 left-16 w-48 h-64 rounded-3xl overflow-hidden transform rotate-12 shadow-xl">
-              <Image src="/placeholder.svg?height=256&width=192" alt="Match photo" className="absolute inset-0 w-full h-full object-cover" />
+              <Image
+                src={matchedProfile?.image || "/placeholder.svg?height=256&width=192"}
+                alt="Match photo"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
 
             {/* Heart Icons */}

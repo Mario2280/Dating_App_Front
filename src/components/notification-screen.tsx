@@ -72,7 +72,7 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
   
     const handleEnableNotifications = async () => {
       try {
-        await createUserProfile()
+        //await createUserProfile()
         
         // Open Telegram bot for notifications
         window.open("https://t.me/SomeDatingBot?start=notify", "_blank")
@@ -196,7 +196,7 @@ export default function NotificationScreen({ onNext, onBack, onUpdate, currentUs
             className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
             disabled={isCreatingProfile}
           >
-            {isCreatingProfile ? "Создание профиля..." : "Не беспокоить"}
+            {isCreatingProfile ? "Создание профиля..." : "Продолжить"}
           </Button>
         </div>
       </div>
