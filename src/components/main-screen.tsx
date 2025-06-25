@@ -11,7 +11,7 @@ import BottomNavigation from "./bottom-navigation"
 import PremiumPopup from "./premium-popup"
 import { useLocation } from "@/contexts/location-context"
 import type { Screen } from "@/App"
-import { getSearchFilters, saveCurrentProfile } from "@/lib/telegram-auth"
+import { getSearchFilters, saveCurrentProfile, createConversationFromCurrentProfile } from "@/lib/telegram-auth"
 interface MainScreenProps {
   onProfileClick: () => void
   navigateToScreen: (screen: Screen) => void
@@ -186,17 +186,23 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
 
         return filtered
       })
-      if (direction === "right" && Math.random() > 0.5) {
-        // Save the liked profile for match celebration
+      
+      if (direction === "right") {
+        // Save the liked profile for potential match
         const likedProfile = currentProfiles.find((p) => p.id === id)
         if (likedProfile) {
           saveCurrentProfile(likedProfile)
-        }
-        navigateToScreen("match-celebration")
-      }
+        // Create conversation for this profile
+        createConversationFromCurrentProfile()
 
+        // Random match chance
+        if (Math.random() > 0.5) {
+        navigateToScreen("match-celebration")
+        }
+      }
+    }
       
-    }, 200)
+  }, 200)
 
     // Clear swipe state after animation completes
     setTimeout(() => {

@@ -10,7 +10,13 @@ import { Img as Image } from "react-image"
 import { motion } from "framer-motion"
 import ComplaintModal, { type ComplaintReason } from "./complaint-modal"
 import ChatProfileView from "./chat-profile-view"
-import { getChatsData, getCurrentProfile } from "@/lib/telegram-auth"
+import {
+  getChatsData,
+  getCurrentProfile,
+  getConversations,
+  createConversationFromCurrentProfile,
+  addMessageToConversation,
+} from "@/lib/telegram-auth"
 interface ChatScreenProps {
   onBack: () => void
 }
@@ -52,7 +58,16 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           distance: currentProfile.distance,
         })
 
-        // Start with empty messages for new chat
+        // Try to find existing conversation
+        const conversations = getConversations()
+        const existingConversation = conversations.find((conv) => conv.profile && conv.profile.id === currentProfile.id)
+
+        if (existingConversation && existingConversation.messages) {
+          setChatMessages(existingConversation.messages)
+        } else {
+          const conversationId = createConversationFromCurrentProfile()
+          setChatMessages([])
+        }
         setChatMessages([])
       } else {
         // Fallback to existing logic
@@ -109,7 +124,19 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           sender: "me",
           status: "sent",
         }
-        setChatMessages((prev) => [...prev, newImageMessage])
+        const updatedMessages = [...chatMessages, newImageMessage]
+        setChatMessages(updatedMessages)
+
+        // Save to localStorage
+        const currentProfile = getCurrentProfile()
+        if (currentProfile) {
+          const conversations = getConversations()
+          const conversation = conversations.find((conv) => conv.profile && conv.profile.id === currentProfile.id)
+
+          if (conversation) {
+            addMessageToConversation(conversation.id, newImageMessage)
+          }
+        }
       }
       reader.readAsDataURL(file)
     }
@@ -124,8 +151,20 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
         sender: "me",
         status: "sent",
       }
-      setChatMessages((prev) => [...prev, message])
+      const updatedMessages = [...chatMessages, message]
+      setChatMessages(updatedMessages)
       setNewMessage("")
+
+      // Save to localStorage
+      const currentProfile = getCurrentProfile()
+      if (currentProfile) {
+        const conversations = getConversations()
+        const conversation = conversations.find((conv) => conv.profile && conv.profile.id === currentProfile.id)
+
+        if (conversation) {
+          addMessageToConversation(conversation.id, message)
+        }
+      }
     }
   }
 

@@ -1,9 +1,14 @@
-import AuthService, { CompleteProfileData } from "./auth.service"
+import AuthService, { type CompleteProfileData } from "./auth.service"
 import type { TelegramUser, ProfileData } from "./types"
-import { cloudStorage } from '@telegram-apps/sdk-react'
+import { cloudStorage } from "@telegram-apps/sdk-react"
 
 let storage = null
-if(cloudStorage.isSupported() && cloudStorage.getItem.isAvailable() && cloudStorage.setItem.isAvailable() && cloudStorage.deleteItem.isAvailable()) {
+if (
+  cloudStorage.isSupported() &&
+  cloudStorage.getItem.isAvailable() &&
+  cloudStorage.setItem.isAvailable() &&
+  cloudStorage.deleteItem.isAvailable()
+) {
   storage = cloudStorage
 } else {
   storage = localStorage
@@ -11,9 +16,8 @@ if(cloudStorage.isSupported() && cloudStorage.getItem.isAvailable() && cloudStor
 
 // Check if user is authenticated via Telegram
 export function getTelegramUser(): TelegramUser | null {
+  if (!storage) return null
 
-  if(!storage) return null
-  
   try {
     const userData = storage.getItem("telegram_user")
     if (!userData) return null
@@ -36,14 +40,14 @@ export function getTelegramUser(): TelegramUser | null {
 
 // Save Telegram user data
 export function saveTelegramUser(user: TelegramUser): void {
-  if(!storage) return
+  if (!storage) return
   storage.setItem("telegram_user", JSON.stringify(user))
 }
 
 // Clear authentication
 export function clearTelegramAuth(): void {
-  if(!storage) return
-  if(storage.deleteItem){
+  if (!storage) return
+  if (storage.deleteItem) {
     storage.deleteItem("telegram_user")
     storage.deleteItem("profile_data")
     storage.deleteItem("search_filters")
@@ -52,7 +56,6 @@ export function clearTelegramAuth(): void {
     storage.removeItem("profile_data")
     storage.removeItem("search_filters")
   }
-  
 }
 
 // Check user registration with backend validation
@@ -68,7 +71,7 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
     // Save complete profile data including chats and likes
     if (response.profile) {
       saveProfileData(response.profile)
-      
+
       // Save additional data if available
       if (response.chats) {
         saveChatsData(response.chats)
@@ -88,13 +91,13 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
 
 // Save profile data locally
 export function saveProfileData(profile: Partial<CompleteProfileData>): void {
-  if(!storage) return null
+  if (!storage) return null
   storage.setItem("profile_data", JSON.stringify(profile))
 }
 
 // Get current profile data
 export function getProfileData(): ProfileData | null {
-  if(!storage) return
+  if (!storage) return
 
   try {
     const profileData = storage.getItem("profile_data")
@@ -115,15 +118,15 @@ export function updateProfileData(updates: Partial<ProfileData>): void {
 
 // Save search filters
 export function saveSearchFilters(filters: any): void {
-  if(!storage) return
-  console.log(filters);
-  
+  if (!storage) return
+  console.log(filters)
+
   storage.setItem("search_filters", JSON.stringify(filters))
 }
 
 // Get search filters
 export function getSearchFilters(): any | null {
-  if(!storage) return null
+  if (!storage) return null
 
   try {
     const filtersData = storage.getItem("search_filters")
@@ -135,13 +138,13 @@ export function getSearchFilters(): any | null {
 
 // Save chats data
 export function saveChatsData(chats: any[]): void {
-  if(!storage) return
+  if (!storage) return
   storage.setItem("chats_data", JSON.stringify(chats))
 }
 
 // Get chats data
 export function getChatsData(): any[] | null {
-  if(!storage) return null
+  if (!storage) return null
 
   try {
     const chatsData = storage.getItem("chats_data")
@@ -153,13 +156,13 @@ export function getChatsData(): any[] | null {
 
 // Save likes data
 export function saveLikesData(likes: any[]): void {
-  if(!storage) return
+  if (!storage) return
   storage.setItem("likes_data", JSON.stringify(likes))
 }
 
 // Get likes data
 export function getLikesData(): any[] | null {
-  if(!storage) return null
+  if (!storage) return null
 
   try {
     const likesData = storage.getItem("likes_data")
@@ -167,6 +170,143 @@ export function getLikesData(): any[] | null {
   } catch {
     return []
   }
+}
+
+// Save conversations data
+export function saveConversations(conversations: any[]): void {
+  if (!storage) return
+  storage.setItem("conversations_data", JSON.stringify(conversations))
+}
+
+// Get conversations data
+export function getConversations(): any[] {
+  if (!storage) return []
+
+  try {
+    const conversationsData = storage.getItem("conversations_data")
+    return conversationsData ? JSON.parse(conversationsData) : []
+  } catch {
+    return []
+  }
+}
+
+// Add or update a conversation
+export function saveConversation(conversationData: any): void {
+  if (!storage) return
+
+  const conversations = getConversations()
+  const existingIndex = conversations.findIndex((conv) => conv.id === conversationData.id)
+
+  if (existingIndex >= 0) {
+    conversations[existingIndex] = { ...conversations[existingIndex], ...conversationData }
+  } else {
+    conversations.unshift(conversationData) // Add to beginning for recent conversations
+  }
+
+  saveConversations(conversations)
+}
+
+// Add message to conversation
+export function addMessageToConversation(conversationId: number, message: any): void {
+  if (!storage) return
+
+  const conversations = getConversations()
+  const conversationIndex = conversations.findIndex((conv) => conv.id === conversationId)
+
+  if (conversationIndex >= 0) {
+    if (!conversations[conversationIndex].messages) {
+      conversations[conversationIndex].messages = []
+    }
+    conversations[conversationIndex].messages.push(message)
+
+    // Update last message and time
+    conversations[conversationIndex].lastMessage = message.text || "Фото"
+    conversations[conversationIndex].time = message.time
+    conversations[conversationIndex].hasRead = false
+
+    // Move conversation to top
+    const updatedConversation = conversations.splice(conversationIndex, 1)[0]
+    conversations.unshift(updatedConversation)
+
+    saveConversations(conversations)
+  }
+}
+
+// Get conversation by ID
+export function getConversationById(conversationId: number): any | null {
+  const conversations = getConversations()
+  return conversations.find((conv) => conv.id === conversationId) || null
+}
+
+// Save matches data
+export function saveMatches(matches: any[]): void {
+  if (!storage) return
+  storage.setItem("matches_data", JSON.stringify(matches))
+}
+
+// Get matches data
+export function getMatches(): any[] {
+  if (!storage) return []
+
+  try {
+    const matchesData = storage.getItem("matches_data")
+    return matchesData ? JSON.parse(matchesData) : []
+  } catch {
+    return []
+  }
+}
+
+// Add a new match
+export function addMatch(matchData: any): void {
+  if (!storage) return
+
+  const matches = getMatches()
+  const newMatch = {
+    ...matchData,
+    id: Date.now(), // Use timestamp as unique ID
+    matchedAt: new Date().toISOString(),
+    section: "today",
+  }
+
+  matches.unshift(newMatch) // Add to beginning
+  saveMatches(matches)
+
+  // Also create a conversation for this match
+  const conversation = {
+    id: newMatch.id,
+    name: matchData.name,
+    avatar: matchData.image,
+    lastMessage: "У вас мэтч! Начните беседу",
+    time: "сейчас",
+    unread: 0,
+    hasRead: true,
+    messages: [],
+    profile: matchData,
+  }
+
+  saveConversation(conversation)
+}
+
+// Create conversation from current profile
+export function createConversationFromCurrentProfile(): number | null {
+  const currentProfile = getCurrentProfile()
+  if (!currentProfile) return null
+
+  const conversationId = Date.now()
+  const conversation = {
+    id: conversationId,
+    name: currentProfile.name,
+    avatar: currentProfile.image,
+    lastMessage: "Начните беседу",
+    time: "сейчас",
+    unread: 0,
+    hasRead: true,
+    messages: [],
+    profile: currentProfile,
+  }
+
+  saveConversation(conversation)
+  return conversationId
 }
 
 // Save current active profile data
@@ -195,182 +335,4 @@ export function clearCurrentProfile(): void {
   } else {
     storage.removeItem("current_profile")
   }
-}
-
-
-// Conversation management
-export interface ConversationMessage {
-  id: number
-  text?: string
-  image?: string
-  time: string
-  sender: "me" | "other"
-  status?: "sent" | "read"
-}
-
-export interface ConversationData {
-  id: number
-  partnerId: number
-  partnerName: string
-  partnerAvatar: string
-  partnerAge?: number
-  partnerOccupation?: string
-  partnerLocation?: string
-  partnerDistance?: string
-  messages: ConversationMessage[]
-  lastMessage: string
-  lastMessageTime: string
-  unreadCount: number
-  createdAt: string
-}
-
-export interface MatchData {
-  id: number
-  name: string
-  age: number
-  image: string
-  occupation?: string
-  location?: string
-  distance?: string
-  matchedAt: string
-  isRejected?: boolean
-}
-
-// Save conversation
-export function saveConversation(conversation: ConversationData): void {
-  if (!storage) return
-
-  const conversations = getConversations()
-  const existingIndex = conversations.findIndex((c) => c.id === conversation.id)
-
-  if (existingIndex >= 0) {
-    conversations[existingIndex] = conversation
-  } else {
-    conversations.push(conversation)
-  }
-
-  storage.setItem("conversations", JSON.stringify(conversations))
-}
-
-// Get all conversations
-export function getConversations(): ConversationData[] {
-  if (!storage) return []
-
-  try {
-    const conversationsData = storage.getItem("conversations")
-    return conversationsData ? JSON.parse(conversationsData) : []
-  } catch {
-    return []
-  }
-}
-
-// Get specific conversation
-export function getConversation(conversationId: number): ConversationData | null {
-  const conversations = getConversations()
-  return conversations.find((c) => c.id === conversationId) || null
-}
-
-// Add message to conversation
-export function addMessageToConversation(conversationId: number, message: ConversationMessage): void {
-  const conversation = getConversation(conversationId)
-  if (!conversation) return
-
-  conversation.messages.push(message)
-  conversation.lastMessage = message.text || "Изображение"
-  conversation.lastMessageTime = message.time
-
-  // Update unread count if message is from other person
-  if (message.sender === "other") {
-    conversation.unreadCount += 1
-  }
-
-  saveConversation(conversation)
-}
-
-// Mark conversation as read
-export function markConversationAsRead(conversationId: number): void {
-  const conversation = getConversation(conversationId)
-  if (!conversation) return
-
-  conversation.unreadCount = 0
-  conversation.messages = conversation.messages.map((msg) =>
-    msg.sender === "me" && msg.status === "sent" ? { ...msg, status: "read" } : msg,
-  )
-
-  saveConversation(conversation)
-}
-
-// Create new conversation from match
-export function createConversationFromMatch(match: MatchData): ConversationData {
-  const newConversation: ConversationData = {
-    id: Date.now(), // Use timestamp as unique ID
-    partnerId: match.id,
-    partnerName: match.name,
-    partnerAvatar: match.image,
-    partnerAge: match.age,
-    partnerOccupation: match.occupation,
-    partnerLocation: match.location,
-    partnerDistance: match.distance,
-    messages: [],
-    lastMessage: "",
-    lastMessageTime: new Date().toISOString(),
-    unreadCount: 0,
-    createdAt: new Date().toISOString(),
-  }
-
-  saveConversation(newConversation)
-  return newConversation
-}
-
-// Match management
-export function saveMatch(match: MatchData): void {
-  if (!storage) return
-
-  const matches = getMatches()
-  const existingIndex = matches.findIndex((m) => m.id === match.id)
-
-  if (existingIndex >= 0) {
-    matches[existingIndex] = match
-  } else {
-    matches.push(match)
-  }
-
-  storage.setItem("matches", JSON.stringify(matches))
-}
-
-// Get all matches
-export function getMatches(): MatchData[] {
-  if (!storage) return []
-
-  try {
-    const matchesData = storage.getItem("matches")
-    return matchesData ? JSON.parse(matchesData) : []
-  } catch {
-    return []
-  }
-}
-
-// Reject match
-export function rejectMatch(matchId: number): void {
-  const matches = getMatches()
-  const matchIndex = matches.findIndex((m) => m.id === matchId)
-
-  if (matchIndex >= 0) {
-    matches[matchIndex].isRejected = true
-    storage.setItem("matches", JSON.stringify(matches))
-  }
-}
-
-// Save current chat partner
-export function saveCurrentChatPartner(partner: {
-  id: number
-  name: string
-  avatar: string
-  age?: number
-  occupation?: string
-  location?: string
-  distance?: string
-}): void {
-  if (!storage) return
-  storage.setItem("current_chat_partner", JSON.stringify(partner))
 }

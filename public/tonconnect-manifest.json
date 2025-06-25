@@ -1,7 +1,5 @@
 {
-  "url": "https://your-domain.com",
-  "name": "Dating App",
-  "iconUrl": "https://your-domain.com/icon.png",
-  "termsOfUseUrl": "https://your-domain.com/terms",
-  "privacyPolicyUrl": "https://your-domain.com/privacy"
+	"url": "https://t.me/SomeDatingBot",
+	"name": "Dating App",
+	"iconUrl": "https://localhost/girl_1.jpg"
 }

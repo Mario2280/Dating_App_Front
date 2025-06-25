@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Img as Image } from "react-image"
-import { getCurrentProfile, getTelegramUser } from "@/lib/telegram-auth"
+import { getCurrentProfile, getTelegramUser, addMatch } from "@/lib/telegram-auth"
 interface MatchCelebrationScreenProps {
   onMessage: () => void
   onContinue: () => void
@@ -12,6 +12,22 @@ export default function MatchCelebrationScreen({ onMessage, onContinue }: MatchC
   // Get current matched profile and user profile
   const matchedProfile = getCurrentProfile()
   const userProfile = getTelegramUser()
+
+  const handleMessage = () => {
+    // Save the match when user decides to message
+    if (matchedProfile) {
+      addMatch(matchedProfile)
+    }
+    onMessage()
+  }
+
+  const handleContinue = () => {
+    // Save the match even if user continues swiping
+    if (matchedProfile) {
+      addMatch(matchedProfile)
+    }
+    onContinue()
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
@@ -70,13 +86,13 @@ export default function MatchCelebrationScreen({ onMessage, onContinue }: MatchC
 
       <div className="w-full space-y-4 pb-8">
         <Button
-          onClick={onMessage}
+          onClick={handleMessage}
           className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium rounded-2xl"
         >
           Написать
         </Button>
 
-        <button onClick={onContinue} className="w-full text-blue-500 text-lg font-medium">
+        <button onClick={handleContinue} className="w-full text-blue-500 text-lg font-medium">
           Смотреть других
         </button>
       </div>

@@ -6,7 +6,7 @@ import BottomNavigation from "./bottom-navigation"
 import ChatScreen from "./chat-screen"
 import type { Screen } from "@/App"
 import { Img as Image } from 'react-image';
-import { getChatsData } from "@/lib/telegram-auth"
+import { getConversations, saveCurrentProfile } from "@/lib/telegram-auth"
 interface MessagesScreenProps {
   onBack: () => void
   onChatClick: (conversationId: number) => void
@@ -31,19 +31,20 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
   // Load conversations from backend
   useEffect(() => {
     const loadConversations = () => {
-      const chatsData = getChatsData()
-      if (chatsData && chatsData.length > 0) {
-        // Convert backend chat data to conversation format
-        const backendConversations = chatsData.map((chat: any, index: number) => ({
-          id: chat.id || index + 1,
-          name: chat.name || `Пользователь ${index + 1}`,
-          lastMessage: chat.lastMessage || "Новое сообщение",
-          time: chat.time || "сейчас",
-          unread: chat.unread || 0,
-          avatar: chat.avatar || "/placeholder.svg?height=60&width=60",
-          hasRead: chat.hasRead !== undefined ? chat.hasRead : true,
+      const savedConversations = getConversations()
+
+      if (savedConversations && savedConversations.length > 0) {
+        // Convert saved conversations to display format
+        const displayConversations = savedConversations.map((conv: any) => ({
+          id: conv.id,
+          name: conv.name || conv.profile?.name || "Пользователь",
+          lastMessage: conv.lastMessage || "Новое сообщение",
+          time: conv.time || "сейчас",
+          unread: conv.unread || 0,
+          avatar: conv.avatar || conv.profile?.image || "/placeholder.svg?height=60&width=60",
+          hasRead: conv.hasRead !== undefined ? conv.hasRead : true,
         }))
-        setConversations(backendConversations)
+        setConversations(displayConversations)
       } else {
         // Fallback to demo data
         setConversations([
@@ -85,6 +86,13 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
     setConversations((prev) =>
       prev.map((conv) => (conv.id === conversationId ? { ...conv, unread: 0, hasRead: true } : conv)),
     )
+    // Save the conversation profile as current profile for chat
+    const savedConversations = getConversations()
+    const selectedConversation = savedConversations.find((conv) => conv.id === conversationId)
+
+    if (selectedConversation && selectedConversation.profile) {
+      saveCurrentProfile(selectedConversation.profile)
+    }
     setSelectedConversationId(conversationId)
     setShowChat(true)
   }

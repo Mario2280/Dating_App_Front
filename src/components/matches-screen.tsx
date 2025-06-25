@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Heart, X } from "lucide-react"
 import BottomNavigation from "./bottom-navigation"
 import type { Screen } from "@/App"
 import { Img as Image } from 'react-image';
+import { getMatches, saveCurrentProfile } from "@/lib/telegram-auth"
 interface MatchesScreenProps {
   onBack: () => void
   onChatClick: () => void
@@ -22,17 +23,53 @@ interface Match {
 }
 
 export default function MatchesScreen({ onBack, onChatClick, navigateToScreen }: MatchesScreenProps) {
-  const [matches, setMatches] = useState<Match[]>([
-    { id: 1, name: "Мария", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
-    { id: 2, name: "Анна", age: 20, image: "/placeholder.svg?height=200&width=150", section: "today" },
-    { id: 3, name: "Анна", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
-    { id: 4, name: "Алиса", age: 25, image: "/placeholder.svg?height=200&width=150", section: "today" },
-    { id: 5, name: "Елена", age: 22, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
-    { id: 6, name: "София", age: 24, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
-  ])
+  const [matches, setMatches] = useState<Match[]>([])
 
+  // Load real matches on component mount
+  useEffect(() => {
+    const loadMatches = () => {
+      const savedMatches = getMatches()
+
+      if (savedMatches && savedMatches.length > 0) {
+        // Convert saved matches to display format
+        const displayMatches = savedMatches.map((match: any) => ({
+          id: match.id,
+          name: match.name,
+          age: match.age,
+          image: match.image,
+          section: match.section || "today",
+          isRejected: false,
+        }))
+        setMatches(displayMatches)
+      } else {
+        // Keep existing demo data as fallback
+        setMatches([
+          { id: 1, name: "Мария", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
+          { id: 2, name: "Анна", age: 20, image: "/placeholder.svg?height=200&width=150", section: "today" },
+          { id: 3, name: "Анна", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
+          { id: 4, name: "Алиса", age: 25, image: "/placeholder.svg?height=200&width=150", section: "today" },
+          { id: 5, name: "Елена", age: 22, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
+          { id: 6, name: "София", age: 24, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
+        ])
+      }
+    }
+
+  loadMatches()
+  }, [])
   const handleReject = (matchId: number) => {
     setMatches((prev) => prev.map((match) => (match.id === matchId ? { ...match, isRejected: true } : match)))
+  }
+
+  const handleStartChat = (match: Match) => {
+    // Find the full match data and set as current profile
+    const savedMatches = getMatches()
+    const fullMatchData = savedMatches.find((m) => m.id === match.id)
+
+    if (fullMatchData) {
+      saveCurrentProfile(fullMatchData)
+    }
+
+    onChatClick()
   }
 
   const todayMatches = matches.filter((match) => match.section === "today" && !match.isRejected)
@@ -70,7 +107,7 @@ export default function MatchesScreen({ onBack, onChatClick, navigateToScreen }:
                       variant="secondary"
                       size="icon"
                       className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm"
-                      onClick={onChatClick}
+                      onClick={() => handleStartChat(match)}
                     >
                       <Heart className="h-6 w-6 text-white" />
                     </Button>
@@ -107,7 +144,7 @@ export default function MatchesScreen({ onBack, onChatClick, navigateToScreen }:
                       variant="secondary"
                       size="icon"
                       className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-sm"
-                      onClick={onChatClick}
+                      onClick={() => handleStartChat(match)}
                     >
                       <Heart className="h-6 w-6 text-white" />
                     </Button>

@@ -8,7 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import PremiumPopup from "./premium-popup"
 import type { Screen } from "@/App"
-import { getCurrentProfile, saveCurrentProfile, getProfileData } from "@/lib/telegram-auth"
+import {
+  getCurrentProfile,
+  saveCurrentProfile,
+  getProfileData,
+  createConversationFromCurrentProfile,
+  getConversations,
+} from "@/lib/telegram-auth"
 
 interface ProfileViewScreenProps {
   onBack: () => void
@@ -91,10 +97,14 @@ export default function ProfileViewScreen({
     setSwipeDirection("right")
     setLikesCount((prev) => prev - 1)
 
+        // Save current profile and create conversation
+        saveCurrentProfile(profile)
+        createConversationFromCurrentProfile()
+
     setTimeout(() => {
       // Check for match (random for demo)
       if (Math.random() > 0.5) {
-        navigateToScreen("main")
+        navigateToScreen("match-celebration")
       } else {
         onBack()
       }
@@ -110,6 +120,12 @@ export default function ProfileViewScreen({
 
     // Save current profile for chat
     saveCurrentProfile(profile)
+    const conversations = getConversations()
+    const existingConversation = conversations.find((conv) => conv.profile && conv.profile.id === profile.id)
+
+    if (!existingConversation) {
+      createConversationFromCurrentProfile()
+    }
     navigateToScreen("chat")
   }
 
