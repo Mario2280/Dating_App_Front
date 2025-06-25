@@ -1,8 +1,9 @@
+import { PaymentMethod } from "@stripe/stripe-js"
 import AuthService, { type CompleteProfileData } from "./auth.service"
 import type { TelegramUser, ProfileData } from "./types"
 import { cloudStorage } from "@telegram-apps/sdk-react"
 
-let storage = null
+let storage : Storage | any | null = null
 if (
   cloudStorage.isSupported() &&
   cloudStorage.getItem.isAvailable() &&
@@ -19,6 +20,7 @@ export function getTelegramUser(): TelegramUser | null {
   if (!storage) return null
 
   try {
+
     const userData = storage.getItem("telegram_user")
     if (!userData) return null
 
@@ -36,6 +38,13 @@ export function getTelegramUser(): TelegramUser | null {
   } catch {
     return null
   }
+}
+
+export function saveStripe(paymentMethod:PaymentMethod): void
+{
+  if (!storage) return
+  storage.setItem("payment_method", paymentMethod)
+
 }
 
 // Save Telegram user data
@@ -91,13 +100,13 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
 
 // Save profile data locally
 export function saveProfileData(profile: Partial<CompleteProfileData>): void {
-  if (!storage) return null
+  if (!storage) return 
   storage.setItem("profile_data", JSON.stringify(profile))
 }
 
 // Get current profile data
 export function getProfileData(): ProfileData | null {
-  if (!storage) return
+  if (!storage) return null
 
   try {
     const profileData = storage.getItem("profile_data")
