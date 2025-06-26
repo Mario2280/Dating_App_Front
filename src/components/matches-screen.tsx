@@ -6,7 +6,7 @@ import { Heart, X } from "lucide-react"
 import BottomNavigation from "./bottom-navigation"
 import type { Screen } from "@/App"
 import { Img as Image } from 'react-image';
-import { getMatches, saveCurrentProfile } from "@/lib/telegram-auth"
+import { getMatches, saveCurrentProfile, deleteConversationByProfileId, deleteConversationByMatchId, saveMatches } from "@/lib/telegram-auth"
 interface MatchesScreenProps {
   onBack: () => void
   onChatClick: () => void
@@ -43,21 +43,28 @@ export default function MatchesScreen({ onBack, onChatClick, navigateToScreen }:
         setMatches(displayMatches)
       } else {
         // Keep existing demo data as fallback
-        setMatches([
-          { id: 1, name: "Мария", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
-          { id: 2, name: "Анна", age: 20, image: "/placeholder.svg?height=200&width=150", section: "today" },
-          { id: 3, name: "Анна", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
-          { id: 4, name: "Алиса", age: 25, image: "/placeholder.svg?height=200&width=150", section: "today" },
-          { id: 5, name: "Елена", age: 22, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
-          { id: 6, name: "София", age: 24, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
-        ])
+        //setMatches([
+        //  { id: 1, name: "Мария", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
+        //  { id: 2, name: "Анна", age: 20, image: "/placeholder.svg?height=200&width=150", section: "today" },
+        //  { id: 3, name: "Анна", age: 19, image: "/placeholder.svg?height=200&width=150", section: "today" },
+        //  { id: 4, name: "Алиса", age: 25, image: "/placeholder.svg?height=200&width=150", section: "today" },
+        //  { id: 5, name: "Елена", age: 22, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
+        //  { id: 6, name: "София", age: 24, image: "/placeholder.svg?height=200&width=150", section: "yesterday" },
+        //])
       }
     }
 
-  loadMatches()
+    loadMatches()
   }, [])
   const handleReject = (matchId: number) => {
     setMatches((prev) => prev.map((match) => (match.id === matchId ? { ...match, isRejected: true } : match)))
+    
+    // Delete conversation and messages by match ID
+    deleteConversationByMatchId(matchId)
+    const savedMatches = getMatches()
+    
+    const filteredMatches = savedMatches.filter((m) => m.id !== matchId)
+    saveMatches(filteredMatches)
   }
 
   const handleStartChat = (match: Match) => {

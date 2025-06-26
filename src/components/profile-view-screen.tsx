@@ -120,12 +120,12 @@ export default function ProfileViewScreen({
 
     // Save current profile for chat
     saveCurrentProfile(profile)
-    const conversations = getConversations()
-    const existingConversation = conversations.find((conv) => conv.profile && conv.profile.id === profile.id)
+    //const conversations = getConversations()
+    //const existingConversation = conversations.find((conv) => conv.profile && conv.profile.id === profile.id)
 
-    if (!existingConversation) {
-      createConversationFromCurrentProfile()
-    }
+    //if (!existingConversation) {
+    //  createConversationFromCurrentProfile()
+    //}
     navigateToScreen("chat")
   }
 

@@ -238,6 +238,76 @@ export function getConversationById(conversationId: number): any | null {
   return conversations.find((conv) => conv.id === conversationId) || null
 }
 
+
+// Save chat messages for current profile
+export function saveChatMessages(messages: any[]): void {
+  const currentProfile = getCurrentProfile()
+  if (!storage || !currentProfile) return
+
+  const key = `chat_messages_${currentProfile.id}`
+  storage.setItem(key, JSON.stringify(messages))
+
+  // Also update the conversation's last message if messages exist
+  if (messages.length > 0) {
+    const lastMessage = messages[messages.length - 1]
+    updateConversationLastMessage(currentProfile.id, lastMessage.text || "Фото", lastMessage.time)
+  }
+}
+// Delete conversation and messages by match ID
+export function deleteConversationByMatchId(matchId: number): void {
+  if (!storage) return
+
+  // Remove from conversations list
+  const conversations = getConversations()
+  const conversationToDelete = conversations.find((conv) => conv.id === matchId)
+
+  if (conversationToDelete) {
+    // Remove chat messages
+    const profileId = conversationToDelete.profile?.id || matchId
+    const key = `chat_messages_${profileId}`
+    if (storage.deleteItem) {
+      storage.deleteItem(key)
+    } else {
+      storage.removeItem(key)
+    }
+  }
+
+  // Remove conversation from list
+  const filteredConversations = conversations.filter((conv) => conv.id !== matchId)
+  saveConversations(filteredConversations)
+}
+
+// Get chat messages for current profile
+export function getChatMessages(): any[] {
+  const currentProfile = getCurrentProfile()
+  if (!storage || !currentProfile) return []
+
+  try {
+    const key = `chat_messages_${currentProfile.id}`
+    const messagesData = storage.getItem(key)
+    return messagesData ? JSON.parse(messagesData) : []
+  } catch {
+    return []
+  }
+}
+
+// Delete conversation and messages by profile ID
+export function deleteConversationByProfileId(profileId: number): void {
+  if (!storage) return
+
+  // Remove from conversations list
+  const conversations = getConversations()
+  const filteredConversations = conversations.filter((conv) => conv.profile?.id !== profileId)
+  saveConversations(filteredConversations)
+
+  // Remove chat messages
+  const key = `chat_messages_${profileId}`
+  if (storage.deleteItem) {
+    storage.deleteItem(key)
+  } else {
+    storage.removeItem(key)
+  }
+}
 // Save matches data
 export function saveMatches(matches: any[]): void {
   if (!storage) return
@@ -287,12 +357,91 @@ export function addMatch(matchData: any): void {
   saveConversation(conversation)
 }
 
-// Create conversation from current profile
+
+// Update conversation with last message
+export function updateConversationLastMessage(profileId: number, lastMessage: string, time: string): void {
+  if (!storage) return
+
+  const conversations = getConversations()
+  const conversationIndex = conversations.findIndex((conv) => conv.profile && conv.profile.id === profileId)
+
+  if (conversationIndex >= 0) {
+    conversations[conversationIndex].lastMessage = lastMessage
+    conversations[conversationIndex].time = time
+    conversations[conversationIndex].hasRead = false
+
+    // Move conversation to top
+    const updatedConversation = conversations.splice(conversationIndex, 1)[0]
+    conversations.unshift(updatedConversation)
+
+    saveConversations(conversations)
+  }
+}
+
+// Save likes count
+export function saveLikesCount(count: number): void {
+  if (!storage) return
+  storage.setItem("likes_count", count.toString())
+}
+
+// Get likes count
+export function getLikesCount(): number {
+  if (!storage) return 50 // Default value
+
+  try {
+    const likesData = storage.getItem("likes_count")
+    return likesData ? Number.parseInt(likesData, 10) : 50
+  } catch {
+    return 50
+  }
+}
+
+// Save temporary conversations (for message button clicks)
+export function saveTempConversations(conversations: any[]): void {
+  if (!storage) return
+  storage.setItem("temp_conversations", JSON.stringify(conversations))
+}
+
+// Get temporary conversations
+export function getTempConversations(): any[] {
+  if (!storage) return []
+
+  try {
+    const tempData = storage.getItem("temp_conversations")
+    return tempData ? JSON.parse(tempData) : []
+  } catch {
+    return []
+  }
+}
+
+// Remove temporary conversation by profile ID
+export function removeTempConversation(profileId: number): void {
+  if (!storage) return
+
+  const tempConversations = getTempConversations()
+  const filtered = tempConversations.filter((conv) => conv.profile?.id !== profileId)
+  saveTempConversations(filtered)
+}
+
+// Get conversation by profile ID
+export function getConversationByProfileId(profileId: number): any | null {
+  const conversations = getConversations()
+  return conversations.find((conv) => conv.profile && conv.profile.id === profileId) || null
+}
+
+// Create conversation from current profile with consistent ID
 export function createConversationFromCurrentProfile(): number | null {
   const currentProfile = getCurrentProfile()
   if (!currentProfile) return null
 
-  const conversationId = Date.now()
+   // Use profile ID as conversation ID for consistency
+   const conversationId = currentProfile.id || Date.now()
+
+   // Check if conversation already exists
+   const existingConversation = getConversationByProfileId(conversationId)
+   if (existingConversation) {
+     return existingConversation.id
+   }
   const conversation = {
     id: conversationId,
     name: currentProfile.name,
@@ -308,7 +457,22 @@ export function createConversationFromCurrentProfile(): number | null {
   saveConversation(conversation)
   return conversationId
 }
+// Get or create conversation for current profile
+export function getOrCreateConversationForCurrentProfile(): any | null {
+  const currentProfile = getCurrentProfile()
+  if (!currentProfile) return null
 
+  // Try to find existing conversation by profile ID
+  let conversation = getConversationByProfileId(currentProfile.id)
+
+  if (!conversation) {
+    // Create new conversation if doesn't exist
+    const conversationId = createConversationFromCurrentProfile()
+    conversation = getConversationById(conversationId)
+  }
+
+  return conversation
+}
 // Save current active profile data
 export function saveCurrentProfile(profile: any): void {
   if (!storage) return

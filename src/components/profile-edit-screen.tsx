@@ -160,14 +160,17 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
   const [selectedLivingCondition, setSelectedLivingCondition] = useState<keyof typeof livingConditionsOptions | "">("")
   const [selectedIncome, setSelectedIncome] = useState<keyof typeof incomeOptions | "">("")
 
+
+
   // Social media
   // Remove the Instagram URL state and input
   // const [instagramUrl, setInstagramUrl] = useState("instagram.com/anna_sankevich")
 
   // Add Instagram connection state
   const [instagramConnected, setInstagramConnected] = useState(false)
-  const [instagramProfile, setInstagramProfile] = useState<any>(null)
-  const [spotifyConnected, setSpotifyConnected] = useState(true)
+  const [instagramUrl, setInstagramUrl] = useState("")
+  const [spotifyConnected, setSpotifyConnected] = useState(false)
+  const [spotifyUrl, setSpotifyUrl] = useState("")
   const [bio, setBio] = useState("Привет! Я Аня. Мне нравится общаться с новыми людьми. Обожаю читать...")
   const [selectedInterests, setSelectedInterests] = useState({
     shopping: true,
@@ -276,6 +279,16 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         setSelectedIncome(profile.income || "")
         setBio(profile.bio || "")
 
+        
+        // Load social media
+        if (profile.instagram_url) {
+          setInstagramUrl(profile.instagram_url)
+          setInstagramConnected(true)
+        }
+        if (profile.spotify_url) {
+          setSpotifyUrl(profile.spotify_url)
+          setSpotifyConnected(true)
+        }
         // Load notification settings
         if (typeof profile.notification_settings === "object") {
           setNotificationSettings(profile.notification_settings)
@@ -370,6 +383,28 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
     }
   }
 
+  const handleInstagramConnect = () => {
+    if (!instagramConnected) {
+      setInstagramConnected(true)
+    }
+  }
+
+  const handleInstagramDisconnect = () => {
+    setInstagramConnected(false)
+    setInstagramUrl("")
+  }
+
+  const handleSpotifyConnect = () => {
+    if (!spotifyConnected) {
+      setSpotifyConnected(true)
+    }
+  }
+
+  const handleSpotifyDisconnect = () => {
+    setSpotifyConnected(false)
+    setSpotifyUrl("")
+  }
+
   const handleVisibilityToggle = () => {
     handlePremiumFeature(() => {
       setProfileVisible(!profileVisible)
@@ -397,6 +432,8 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
       living_condition: selectedLivingCondition || undefined,
       income: selectedIncome || undefined,
       bio,
+      instagram_url: instagramConnected ? instagramUrl : undefined,
+      spotify_url: spotifyConnected ? spotifyUrl : undefined,
       interests: Object.keys(selectedInterests).filter(
         (key) => selectedInterests[key as keyof typeof selectedInterests],
       ),
@@ -576,46 +613,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
           </div>
         </div>
 
-        {/*Photos
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Фотографии</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {photos.map((photo, index) => (
-              <div key={index} className="aspect-square rounded-xl overflow-hidden relative">
-                {photo ? (
-                  <>
-                  <Image
-                    src={photo || "/placeholder.svg"}
-                    alt={`Photo ${index + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={() => handleDeletePhoto(index)}
-                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4 text-white" />
-                  </button>
-                </>
-                ) : (
-                  <button
-                    onClick={() => fileInputRefs.current[index]?.click()}
-                    className="w-full h-full border-2 border-dashed border-blue-300 flex items-center justify-center rounded-xl"
-                  >
-                    <Plus className="h-6 w-6 text-blue-500" />
-                  </button>
-                )}
-                <input
-                  ref={(el) => (fileInputRefs.current[index] = el)}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(index, e)}
-                  className="hidden"
-                />
-              </div>
-            ))}
-          </div>
-        </div>*/}
-
+        
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Фотографии</h2>
           <div className="grid grid-cols-3 gap-3">
@@ -703,48 +701,79 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Социальные сети</h2>
 
-          <InstagramOAuthConnector
-            onSuccess={(profile) => {
-              setInstagramConnected(true)
-              setInstagramProfile(profile)
-              console.log("Instagram connected:", profile)
-            }}
-            onError={(error) => {
-              console.error("Instagram connection failed:", error)
-            }}
-            isConnected={instagramConnected}
-            connectedProfile={instagramProfile}
-            onDisconnect={() => {
-              setInstagramConnected(false)
-              setInstagramProfile(null)
-            }}
-            showDisconnectButton={true}
-          />
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSpotifyConnected(!spotifyConnected)}
-              className={`flex-1 p-3 rounded-xl border flex items-center gap-3 transition-colors ${
-                spotifyConnected
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 bg-white text-gray-700"
-              }`}
-            >
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">S</span>
-              </div>
-              <span className="font-medium flex-1 text-left">Spotify</span>
-              {spotifyConnected && <Check className="h-5 w-5" />}
-            </button>
-            {spotifyConnected && (
-              <Button
-                onClick={() => setSpotifyConnected(false)}
-                variant="outline"
-                size="sm"
-                className="text-red-500 border-red-500 hover:bg-red-50"
+          {/* Instagram Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleInstagramConnect}
+                className={`flex-1 p-4 rounded-2xl border-2 flex items-center gap-3 transition-colors ${
+                  instagramConnected
+                    ? "border-pink-500 bg-pink-500 text-white"
+                    : "border-gray-200 bg-white text-gray-700"
+                }`}
               >
-                Отключить
-              </Button>
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">IG</span>
+                </div>
+                <span className="text-lg font-medium flex-1 text-left">Instagram</span>
+                {instagramConnected && <Check className="h-6 w-6" />}
+              </button>
+              {instagramConnected && (
+                <Button
+                  onClick={handleInstagramDisconnect}
+                  variant="outline"
+                  size="icon"
+                  className="text-red-500 border-red-500 hover:bg-red-50 rounded-2xl"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+            {instagramConnected && (
+              <Input
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                placeholder="https://instagram.com/username"
+                className="text-lg border-2 border-gray-200 rounded-2xl"
+              />
+            )}
+          </div>
+
+          {/* Spotify Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSpotifyConnect}
+                className={`flex-1 p-4 rounded-2xl border-2 flex items-center gap-3 transition-colors ${
+                  spotifyConnected
+                    ? "border-green-500 bg-green-500 text-white"
+                    : "border-gray-200 bg-white text-gray-700"
+                }`}
+              >
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">S</span>
+                </div>
+                <span className="text-lg font-medium flex-1 text-left">Spotify</span>
+                {spotifyConnected && <Check className="h-6 w-6" />}
+              </button>
+              {spotifyConnected && (
+                <Button
+                  onClick={handleSpotifyDisconnect}
+                  variant="outline"
+                  size="icon"
+                  className="text-red-500 border-red-500 hover:bg-red-50 rounded-2xl"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+            {spotifyConnected && (
+              <Input
+                value={spotifyUrl}
+                onChange={(e) => setSpotifyUrl(e.target.value)}
+                placeholder="https://open.spotify.com/user/username"
+                className="text-lg border-2 border-gray-200 rounded-2xl"
+              />
             )}
           </div>
         </div>

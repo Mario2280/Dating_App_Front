@@ -11,7 +11,16 @@ import BottomNavigation from "./bottom-navigation"
 import PremiumPopup from "./premium-popup"
 import { useLocation } from "@/contexts/location-context"
 import type { Screen } from "@/App"
-import { getSearchFilters, saveCurrentProfile, createConversationFromCurrentProfile } from "@/lib/telegram-auth"
+import {
+  getSearchFilters,
+  saveCurrentProfile,
+  getLikesCount,
+  saveLikesCount,
+  saveTempConversations,
+  getTempConversations,
+  removeTempConversation,
+} from "@/lib/telegram-auth"
+
 interface MainScreenProps {
   onProfileClick: () => void
   navigateToScreen: (screen: Screen) => void
@@ -125,7 +134,7 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
   ])
   const [nextProfileId, setNextProfileId] = useState(3)
   const [swipingCard, setSwipingCard] = useState<{ id: number; direction: "left" | "right" } | null>(null)
-  const [likesCount, setLikesCount] = useState(50)
+  const [likesCount, setLikesCount] = useState(() => getLikesCount())
   const [showPremiumPopup, setShowPremiumPopup] = useState(false)
   const [premiumPopupType, setPremiumPopupType] = useState<"likes" | "messages">("likes")
   const [hasWallet] = useState(false)
@@ -160,6 +169,12 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
     return () => clearInterval(interval)
   }, [requestLocation, hasLocationPermission])
 
+  
+  // Save likes count whenever it changes
+  useEffect(() => {
+    saveLikesCount(likesCount)
+  }, [likesCount])
+
   const animateSwipe = (id: number, direction: "left" | "right") => {
     if (direction === "right") {
       if (likesCount <= 0) {
@@ -168,6 +183,12 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
         return
       }
       setLikesCount((prev) => prev - 1)
+    }
+
+    
+    // If swiping left, remove any temporary conversation for this profile
+    if (direction === "left") {
+      removeTempConversation(id)
     }
 
     setSwipingCard({ id, direction })
@@ -193,10 +214,10 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
         if (likedProfile) {
           saveCurrentProfile(likedProfile)
         // Create conversation for this profile
-        createConversationFromCurrentProfile()
+        //createConversationFromCurrentProfile()
 
         // Random match chance
-        if (Math.random() > 0.5) {
+        if (Math.random() > 0.9) {
         navigateToScreen("match-celebration")
         }
       }
@@ -227,6 +248,35 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
     navigateToScreen("profile-view")
   }
 
+
+  const handleMessageClick = () => {
+    if (currentProfiles.length > 0) {
+      const currentProfile = currentProfiles[0]
+
+      // Add to temporary conversations (will be removed if disliked)
+      const tempConversations = getTempConversations()
+      const tempConversation = {
+        id: currentProfile.id,
+        name: currentProfile.name,
+        avatar: currentProfile.image,
+        lastMessage: "Начните беседу",
+        time: "сейчас",
+        unread: 0,
+        hasRead: true,
+        messages: [],
+        profile: currentProfile,
+      }
+
+      const existingIndex = tempConversations.findIndex((conv) => conv.id === currentProfile.id)
+      if (existingIndex === -1) {
+        tempConversations.unshift(tempConversation)
+        saveTempConversations(tempConversations)
+      }
+
+      saveCurrentProfile(currentProfile)
+      navigateToScreen("chat")
+    }
+  }
   const handleTouchStart = (e: React.TouchEvent) => {
     startYRef.current = e.touches[0].clientY
     setIsDragging(true)

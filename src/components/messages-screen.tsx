@@ -6,7 +6,8 @@ import BottomNavigation from "./bottom-navigation"
 import ChatScreen from "./chat-screen"
 import type { Screen } from "@/App"
 import { Img as Image } from 'react-image';
-import { getConversations, saveCurrentProfile } from "@/lib/telegram-auth"
+import { getConversations, saveCurrentProfile, getTempConversations } from "@/lib/telegram-auth"
+
 interface MessagesScreenProps {
   onBack: () => void
   onChatClick: (conversationId: number) => void
@@ -29,13 +30,15 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null)
 
   // Load conversations from backend
-  useEffect(() => {
     const loadConversations = () => {
       const savedConversations = getConversations()
+      const tempConversations = getTempConversations()
 
-      if (savedConversations && savedConversations.length > 0) {
+      // Combine saved and temporary conversations
+      const allConversations = [...savedConversations, ...tempConversations]
+      if (allConversations && allConversations.length > 0) {
         // Convert saved conversations to display format
-        const displayConversations = savedConversations.map((conv: any) => ({
+        const displayConversations = allConversations.map((conv: any) => ({
           id: conv.id,
           name: conv.name || conv.profile?.name || "Пользователь",
           lastMessage: conv.lastMessage || "Новое сообщение",
@@ -53,7 +56,7 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
           name: "Анна",
           lastMessage: "Стикер 😍",
           time: "23 мин",
-          unread: 1,
+          unread: 4,
           avatar: "/placeholder.svg?height=60&width=60",
           hasRead: false,
         },
@@ -78,9 +81,16 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
       ])
       }
     }
-
+  useEffect(() => {
     loadConversations()
   }, [])
+
+  // Reload conversations when returning from chat
+  useEffect(() => {
+    if (!showChat) {
+      loadConversations()
+    }
+  }, [showChat])
   const handleChatClick = (conversationId: number) => {
     // Mark conversation as read when clicked
     setConversations((prev) =>
@@ -88,7 +98,9 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
     )
     // Save the conversation profile as current profile for chat
     const savedConversations = getConversations()
-    const selectedConversation = savedConversations.find((conv) => conv.id === conversationId)
+    const tempConversations = getTempConversations()
+    const allConversations = [...savedConversations, ...tempConversations]
+    const selectedConversation = allConversations.find((conv) => conv.id === conversationId)
 
     if (selectedConversation && selectedConversation.profile) {
       saveCurrentProfile(selectedConversation.profile)
@@ -100,6 +112,10 @@ export default function MessagesScreen({ onBack, onChatClick, navigateToScreen }
   const handleChatBack = () => {
     setShowChat(false)
     setSelectedConversationId(null)
+    // Reload conversations when returning from chat
+    setTimeout(() => {
+      loadConversations()
+    }, 100)
   }
 
   if (showChat) {

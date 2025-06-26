@@ -21,7 +21,7 @@ interface UseLocationManagerReturn {
 }
 
 export function useLocationManager(): UseLocationManagerReturn {
-  const [isMounted, setLocationManagerAvailable] = useState(false)
+  const [isMounted, setLocationManagerAvailable] = useState(locationManager.isMounted())
   const [location, setLocation] = useState<LocationData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +64,12 @@ export function useLocationManager(): UseLocationManagerReturn {
       }
     }
 
+    permissionCheckInterval = setInterval(() => {
+            
+      console.log(locationManager.isMounted());
+      
+    }, 1000)
+
     const setupSubscriptions = () => {
       // Подписываемся на событие проверки локации
       on('location_checked', handleLocationChecked)
@@ -82,6 +88,8 @@ export function useLocationManager(): UseLocationManagerReturn {
           permissionCheckInterval = setInterval(() => {
             
             postEvent('web_app_check_location')
+            console.log(locationManager.isMounted());
+            
           }, 1000)
         }
       })

@@ -15,7 +15,10 @@ import {
   getCurrentProfile,
   getConversations,
   createConversationFromCurrentProfile,
+  getOrCreateConversationForCurrentProfile,
   addMessageToConversation,
+  saveChatMessages,
+  getChatMessages,
 } from "@/lib/telegram-auth"
 interface ChatScreenProps {
   onBack: () => void
@@ -41,7 +44,6 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [chatData, setChatData] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
   // Load chat data from backend
   useEffect(() => {
     const loadChatData = () => {
@@ -58,17 +60,23 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           distance: currentProfile.distance,
         })
 
-        // Try to find existing conversation
+        // Load existing messages for this profile
+        const savedMessages = getChatMessages()
+        if(savedMessages.length){
+          setChatMessages(savedMessages)
+        } else {
+          setChatMessages([])
+        }
+        
+
+        // Ensure conversation exists
         const conversations = getConversations()
         const existingConversation = conversations.find((conv) => conv.profile && conv.profile.id === currentProfile.id)
 
-        if (existingConversation && existingConversation.messages) {
-          setChatMessages(existingConversation.messages)
-        } else {
-          const conversationId = createConversationFromCurrentProfile()
-          setChatMessages([])
+        if (!existingConversation) {
+          createConversationFromCurrentProfile()
         }
-        setChatMessages([])
+        
       } else {
         // Fallback to existing logic
         const chatsData = getChatsData()
@@ -95,6 +103,14 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
     }
     loadChatData()
   }, [])
+
+  // Save messages whenever chatMessages changes
+  useEffect(() => {
+    const currentProfile = getCurrentProfile()
+    if (currentProfile && chatMessages.length > 0) {
+      saveChatMessages(chatMessages)
+    }
+  }, [chatMessages])
 
   // Simulate message read status updates
   useEffect(() => {
@@ -127,7 +143,7 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
         const updatedMessages = [...chatMessages, newImageMessage]
         setChatMessages(updatedMessages)
 
-        // Save to localStorage
+        // Update conversation last message
         const currentProfile = getCurrentProfile()
         if (currentProfile) {
           const conversations = getConversations()
@@ -136,8 +152,8 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
           if (conversation) {
             addMessageToConversation(conversation.id, newImageMessage)
           }
-        }
       }
+    }
       reader.readAsDataURL(file)
     }
   }
@@ -155,15 +171,9 @@ export default function ChatScreen({ onBack }: ChatScreenProps) {
       setChatMessages(updatedMessages)
       setNewMessage("")
 
-      // Save to localStorage
-      const currentProfile = getCurrentProfile()
-      if (currentProfile) {
-        const conversations = getConversations()
-        const conversation = conversations.find((conv) => conv.profile && conv.profile.id === currentProfile.id)
-
-        if (conversation) {
-          addMessageToConversation(conversation.id, message)
-        }
+            // Save to localStorage using conversation ID
+      if (conversationId) {
+        addMessageToConversation(conversationId, message)
       }
     }
   }
