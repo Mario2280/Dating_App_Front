@@ -357,9 +357,6 @@ export default function ProfileViewScreen({
         isOpen={showPremiumPopup}
         onClose={() => setShowPremiumPopup(false)}
         type={premiumPopupType}
-        hasWallet={hasWallet}
-        onBuyPremium={handleBuyPremium}
-        onBuyIndividual={handleBuyIndividual}
         onConnectWallet={handleConnectWallet}
         navigateToScreen={navigateToScreen}
       />

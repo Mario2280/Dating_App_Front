@@ -11,6 +11,7 @@ import type { LocationData, TelegramUser, WalletInfo } from "@/lib/types"
 import { Img as Image } from "react-image"
 import WalletConnectionStub from "./wallet-connection-stub"
 import type { ProfileData } from "@/lib/types"
+import { getPaymentType } from "@/lib/telegram-auth"
 interface WelcomeScreenProps {
   onNext: () => void
   onAuthenticated?: (telegramUser: TelegramUser) => void
@@ -37,7 +38,7 @@ const styles = `
 export default function WelcomeScreen({ onNext, onAuthenticated, authenticatedUser, setCurrentUser }: WelcomeScreenProps) {
   const [showTerms, setShowTerms] = useState(false)
   const [showWalletModal, setShowWalletModal] = useState(false)
-  const [walletConnected, setWalletConnected] = useState(false)
+  const [walletConnected, setWalletConnected] = useState(getPaymentType() === "stripe")
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null)
   const [walletType, setWalletType] = useState<string>("")
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null)

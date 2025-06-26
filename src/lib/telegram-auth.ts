@@ -40,11 +40,22 @@ export function getTelegramUser(): TelegramUser | null {
   }
 }
 
-export function saveStripe(paymentMethod:PaymentMethod): void
-{
+export function saveStripe(paymentMethod:PaymentMethod): void{
   if (!storage) return
+  storage.setItem("payment_type", "stripe")
   storage.setItem("payment_method", paymentMethod)
 
+}
+
+export function getPaymentInfo(): PaymentMethod | null{
+  
+
+  return storage?.getItem("payment_method") ?? null
+}
+
+export function getPaymentType(): string | null {
+
+  return storage?.getItem("payment_type") ?? null
 }
 
 // Save Telegram user data
@@ -60,10 +71,14 @@ export function clearTelegramAuth(): void {
     storage.deleteItem("telegram_user")
     storage.deleteItem("profile_data")
     storage.deleteItem("search_filters")
+    storage.deleteItem("payment_type")
+    storage.deleteItem("payment_method")
   } else {
     storage.removeItem("telegram_user")
     storage.removeItem("profile_data")
     storage.removeItem("search_filters")
+    storage.deleteItem("payment_type")
+    storage.deleteItem("payment_method")
   }
 }
 

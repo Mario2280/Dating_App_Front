@@ -652,9 +652,6 @@ export default function FiltersScreen({ onBack, navigateToScreen }: FiltersScree
         isOpen={showPremiumPopup}
         onClose={() => setShowPremiumPopup(false)}
         type="likes"
-        hasWallet={hasWallet}
-        onBuyPremium={handleBuyPremium}
-        onBuyIndividual={handleBuyIndividual}
         onConnectWallet={handleConnectWallet}
         navigateToScreen={navigateToScreen}
       />

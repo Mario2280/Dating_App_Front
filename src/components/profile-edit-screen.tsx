@@ -18,6 +18,7 @@ import type { Screen } from "@/App"
 import { calculateAgeFromDate } from './profile-details-screen'
 import AuthService, { type CompleteProfileData } from "@/lib/auth.service"
 import { getProfileData, getTelegramUser, saveProfileData } from "@/lib/telegram-auth"
+import { getPaymentType } from "@/lib/telegram-auth"
 interface ProfileEditScreenProps {
   onBack: () => void
   onSave: () => void
@@ -195,7 +196,7 @@ export default function ProfileEditScreen({ onBack, onSave, navigateToScreen }: 
   // Wallet state
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null)
   const [isLoadingWallet, setIsLoadingWallet] = useState(true)
-  const [walletConnected, setWalletConnected] = useState(false)
+  const [walletConnected, setWalletConnected] = useState(getPaymentType() === "stripe")
   const [showWalletModal, setShowWalletModal] = useState(false)
   // Dropdown states
 
