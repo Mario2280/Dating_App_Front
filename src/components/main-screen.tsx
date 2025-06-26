@@ -439,9 +439,6 @@ export default function MainScreen({ onProfileClick, navigateToScreen }: MainScr
         isOpen={showPremiumPopup}
         onClose={() => setShowPremiumPopup(false)}
         type={premiumPopupType}
-        hasWallet={hasWallet}
-        onBuyPremium={handleBuyPremium}
-        onBuyIndividual={handleBuyIndividual}
         onConnectWallet={handleConnectWallet}
         navigateToScreen={navigateToScreen}
       />

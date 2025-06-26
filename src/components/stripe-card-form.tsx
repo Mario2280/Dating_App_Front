@@ -3,13 +3,13 @@
 import type React from "react"
 
 import { useState } from "react"
-import { loadStripe } from "@stripe/stripe-js"
+import { loadStripe, PaymentMethod } from "@stripe/stripe-js"
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { Button } from "@/components/ui/button"
 import { CreditCard } from "lucide-react"
 
 // Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_...")
+const stripePromise = loadStripe(import.meta.env.VITE_PUBLIC_STRIPE_PUBLISHABLE_KEY )
 
 interface StripeCardFormProps {
   onSuccess: (paymentMethod: any) => void

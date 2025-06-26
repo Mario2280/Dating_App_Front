@@ -2,31 +2,94 @@
 
 import { Button } from "@/components/ui/button"
 import { X, Crown, Heart, MessageSquare } from "lucide-react"
+import { getPaymentType } from "@/lib/telegram-auth"
+import { loadStripe } from "@stripe/stripe-js"
+
 
 interface PremiumPopupProps {
   isOpen: boolean
   onClose: () => void
   type: "likes" | "messages"
   hasWallet: boolean
-  onBuyPremium: () => void
-  onBuyIndividual: () => void
   onConnectWallet: () => void
   navigateToScreen: (screen: string) => void
+}
+
+const stripePromise = loadStripe("pk_test_51RdvRRFxOGVlsqnPPUlVuSjBiVCQtyjFHOvymIlMzsdtDu4VXd5Gw0lQkx8vhi4vtC1aM4P9NVYygbuqWMkJWzId00FJqSWYzr")
+
+export async function onBuyPremium() {
+  if (getPaymentType() !== "stripe") return
+
+  const stripe = await stripePromise
+  if (!stripe) {
+    console.error("Stripe failed to initialize.")
+    return
+  }
+
+  const currentUrl = window.location.href
+
+  const result = await stripe.redirectToCheckout({
+    lineItems: [
+      {
+        price: "price_1RdyxyFxOGVlsqnPqgR8Ya9b", 
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    customerEmail: "mock@opail.com",
+    successUrl: currentUrl,
+    cancelUrl: currentUrl,
+  })
+  
+  if (result.error) {
+    console.error("Stripe checkout error:", result.error.message)
+  }
+}
+
+export async function onBuyIndividual(){
+if (getPaymentType() !== "stripe") return
+
+  const stripe = await stripePromise
+  if (!stripe) {
+    console.error("Stripe failed to initialize.")
+    return
+  }
+
+  const currentUrl = window.location.href
+
+  const result = await stripe.redirectToCheckout({
+    lineItems: [
+      {
+        price: "price_1Re3GhFxOGVlsqnPi9NEyBIa", 
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    customerEmail: "mock@opail.com",
+    successUrl: currentUrl,
+    cancelUrl: currentUrl,
+  })
+  
+  if (result.error) {
+    console.error("Stripe checkout error:", result.error.message)
+  }
 }
 
 export default function PremiumPopup({
   isOpen,
   onClose,
   type,
-  hasWallet,
-  onBuyPremium,
-  onBuyIndividual,
   onConnectWallet,
   navigateToScreen,
 }: PremiumPopupProps) {
   if (!isOpen) return null
 
-  const isLikes = type === "likes"
+  let hasWallet = false
+  if (!hasWallet){
+    hasWallet = getPaymentType() === "stripe"
+  }
+
+  //const isLikes = type === "likes"
 
   const handleConnectWallet = () => {
     // Navigate to profile edit and trigger wallet connection
@@ -59,15 +122,15 @@ export default function PremiumPopup({
 
         <div className="text-center mb-6">
           <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            {isLikes ? <Heart className="h-10 w-10 text-white" /> : <MessageSquare className="h-10 w-10 text-white" />}
+            {false ? <Heart className="h-10 w-10 text-white" /> : <MessageSquare className="h-10 w-10 text-white" />}
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {isLikes ? "Лимит лайков исчерпан" : "Лимит сообщений исчерпан"}
+            {false ? "Лимит лайков исчерпан" : "Лимит сообщений исчерпан"}
           </h2>
 
           <p className="text-gray-600">
-            {isLikes
+            {false
               ? "Вы достигли дневного лимита лайков. Получите больше возможностей с премиум-аккаунтом!"
               : "Вы достигли лимита сообщений. Продолжите общение с премиум-аккаунтом!"}
           </p>
@@ -89,7 +152,7 @@ export default function PremiumPopup({
             variant="outline"
             className="w-full h-12 border-2 border-blue-500 text-blue-500 hover:bg-blue-50 text-lg font-medium rounded-2xl"
           >
-            {hasWallet ? `Купить 5 ${isLikes ? "лайков" : "сообщений"}` : "Подключить кошелек для покупки"}
+            {hasWallet ? `Купить 50  лайков` : "Подключить кошелек для покупки"}
           </Button>
 
           {/* Close Button */}

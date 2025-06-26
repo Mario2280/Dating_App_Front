@@ -6,6 +6,8 @@ import { X, CreditCard, Wallet, ArrowLeft } from "lucide-react"
 import { motion } from "framer-motion"
 import StripeCardForm from "./stripe-card-form"
 import TonWalletConnector, { type WalletInfo } from "./ton-wallet-connector"
+import { saveStripe } from "@/lib/telegram-auth"
+import { getPaymentType } from "@/lib/telegram-auth"
 
 interface WalletConnectionModalProps {
   isOpen: boolean
@@ -13,15 +15,14 @@ interface WalletConnectionModalProps {
   onSuccess: (walletType: string) => void
 }
 
-type PaymentType = "stripe" | "ton" | null
-
 export default function WalletConnectionModal({ isOpen, onClose, onSuccess }: WalletConnectionModalProps) {
-  const [selectedType, setSelectedType] = useState<PaymentType>(null)
+  const [selectedType, setSelectedType] = useState<string | null>(getPaymentType())
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const handleStripeSuccess = (paymentMethod: any) => {
     console.log("Stripe payment method created:", paymentMethod)
+    saveStripe(paymentMethod)
     setSuccessMessage("Карта успешно подключена!")
     setTimeout(() => {
       onSuccess("stripe")

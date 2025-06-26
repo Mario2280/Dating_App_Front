@@ -1,8 +1,9 @@
+import { PaymentMethod } from "@stripe/stripe-js"
 import AuthService, { type CompleteProfileData } from "./auth.service"
 import type { TelegramUser, ProfileData } from "./types"
 import { cloudStorage } from "@telegram-apps/sdk-react"
 
-let storage = null
+let storage : Storage | any | null = null
 if (
   cloudStorage.isSupported() &&
   cloudStorage.getItem.isAvailable() &&
@@ -19,6 +20,7 @@ export function getTelegramUser(): TelegramUser | null {
   if (!storage) return null
 
   try {
+
     const userData = storage.getItem("telegram_user")
     if (!userData) return null
 
@@ -38,6 +40,24 @@ export function getTelegramUser(): TelegramUser | null {
   }
 }
 
+export function saveStripe(paymentMethod:PaymentMethod): void{
+  if (!storage) return
+  storage.setItem("payment_type", "stripe")
+  storage.setItem("payment_method", paymentMethod)
+
+}
+
+export function getPaymentInfo(): PaymentMethod | null{
+  
+
+  return storage?.getItem("payment_method") ?? null
+}
+
+export function getPaymentType(): string | null {
+
+  return storage?.getItem("payment_type") ?? null
+}
+
 // Save Telegram user data
 export function saveTelegramUser(user: TelegramUser): void {
   if (!storage) return
@@ -51,10 +71,14 @@ export function clearTelegramAuth(): void {
     storage.deleteItem("telegram_user")
     storage.deleteItem("profile_data")
     storage.deleteItem("search_filters")
+    storage.deleteItem("payment_type")
+    storage.deleteItem("payment_method")
   } else {
     storage.removeItem("telegram_user")
     storage.removeItem("profile_data")
     storage.removeItem("search_filters")
+    storage.deleteItem("payment_type")
+    storage.deleteItem("payment_method")
   }
 }
 
@@ -91,13 +115,13 @@ export async function checkUserRegistration(telegramUser: TelegramUser): Promise
 
 // Save profile data locally
 export function saveProfileData(profile: Partial<CompleteProfileData>): void {
-  if (!storage) return null
+  if (!storage) return 
   storage.setItem("profile_data", JSON.stringify(profile))
 }
 
 // Get current profile data
 export function getProfileData(): ProfileData | null {
-  if (!storage) return
+  if (!storage) return null
 
   try {
     const profileData = storage.getItem("profile_data")
